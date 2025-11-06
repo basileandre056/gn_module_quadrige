@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json.schemastore.org/angular-workspace",
+  "version": 1,
+  "projects": {
+    "gn_module_quadrige_extraction": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/gn_module_quadrige_extraction",
+            "index": "app/index.html",
+            "main": "app/main.ts",
+            "polyfills": ["zone.js"],
+            "tsConfig": "tsconfig.json",
+            "assets": [
+              "assets"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

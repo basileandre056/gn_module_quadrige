@@ -1,6 +1,6 @@
-# gn_module_quadrige_extraction — guide & squelette (GeoNature 2.16.3)
+# gn_module_quadrige — guide & squelette (GeoNature 2.16.3)
 
-> Objectif : créer un dépôt **gn_module_quadrige_extraction** prêt à être branché sur GeoNature **2.16.3** avec **Angular 15** (frontend) et **Flask 3.1.1 / SQLAlchemy 1.4.x / Python 3.9** (backend), plus les commandes d’installation locales.
+> Objectif : créer un dépôt **gn_module_quadrige** prêt à être branché sur GeoNature **2.16.3** avec **Angular 15** (frontend) et **Flask 3.1.1 / SQLAlchemy 1.4.x / Python 3.9** (backend), plus les commandes d’installation locales.
 
 ---
 
@@ -17,12 +17,12 @@
 ## 1) Création du dépôt & arborescence
 ```bash
 # Créer le dossier du module (côte à côte avec votre dossier GeoNature)
-mkdir -p ~/dev/gn_module_quadrige_extraction && cd ~/dev/gn_module_quadrige_extraction
+mkdir -p ~/dev/gn_module_quadrige && cd ~/dev/gn_module_quadrige
 
 # Arborescence de base
-mkdir -p backend/src/gn_module_quadrige_extraction/{api,models,migrations,schemas,services,tasks}
+mkdir -p backend/src/gn_module_quadrige/{api,models,migrations,schemas,services,tasks}
 mkdir -p backend/tests
-mkdir -p frontend/{app,assets/gn_module_quadrige_extraction}
+mkdir -p frontend/{app,assets/gn_module_quadrige}
 mkdir -p docs
 
 # Fichiers racine
@@ -31,11 +31,11 @@ touch README.md LICENSE .gitignore
 
 Arborescence cible :
 ```
-gn_module_quadrige_extraction/
+gn_module_quadrige/
 ├─ backend/
 │  ├─ pyproject.toml
 │  ├─ setup.cfg
-│  ├─ src/gn_module_quadrige_extraction/
+│  ├─ src/gn_module_quadrige/
 │  │  ├─ __init__.py
 │  │  ├─ api/blueprint.py
 │  │  ├─ config_schema.py
@@ -53,7 +53,7 @@ gn_module_quadrige_extraction/
 │  │  ├─ gnModule.module.ts
 │  │  ├─ routes.ts
 │  │  └─ components/QuadrigeExtractionComponent.ts
-│  └─ assets/gn_module_quadrige_extraction/
+│  └─ assets/gn_module_quadrige/
 └─ docs/
 ```
 
@@ -68,7 +68,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "gn_module_quadrige_extraction"
+name = "gn_module_quadrige"
 version = "0.1.0"
 description = "Module GeoNature pour l'extraction Quadrige"
 readme = "../README.md"
@@ -86,13 +86,13 @@ dependencies = [
 
 [project.entry-points."geonature.modules"]
 # Entrypoints attendus par GeoNature
-code = "gn_module_quadrige_extraction:MODULE_CODE"
-picto = "gn_module_quadrige_extraction:MODULE_PICTO"
-blueprint = "gn_module_quadrige_extraction.api.blueprint:get_blueprint"
-config_schema = "gn_module_quadrige_extraction.config_schema:get_config_schema"
-migrations = "gn_module_quadrige_extraction:migrations_path"
-alembic_branch = "gn_module_quadrige_extraction:ALEMBIC_BRANCH"
-tasks = "gn_module_quadrige_extraction.tasks:celery_tasks"
+code = "gn_module_quadrige:MODULE_CODE"
+picto = "gn_module_quadrige:MODULE_PICTO"
+blueprint = "gn_module_quadrige.api.blueprint:get_blueprint"
+config_schema = "gn_module_quadrige.config_schema:get_config_schema"
+migrations = "gn_module_quadrige:migrations_path"
+alembic_branch = "gn_module_quadrige:ALEMBIC_BRANCH"
+tasks = "gn_module_quadrige.tasks:celery_tasks"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -110,7 +110,7 @@ exclude = .venv,.tox,build,dist
 addopts = -q
 ```
 
-### 2.3 `backend/src/gn_module_quadrige_extraction/__init__.py`
+### 2.3 `backend/src/gn_module_quadrige/__init__.py`
 ```python
 from importlib import resources
 
@@ -123,7 +123,7 @@ def migrations_path():
     return str(resources.files(__package__) / "migrations")
 ```
 
-### 2.4 `backend/src/gn_module_quadrige_extraction/api/blueprint.py`
+### 2.4 `backend/src/gn_module_quadrige/api/blueprint.py`
 ```python
 from flask import Blueprint, jsonify, request
 
@@ -134,7 +134,7 @@ def get_blueprint(config=None):
 
     @bp.get("/health")
     def health():
-        return jsonify({"status": "ok", "module": "gn_module_quadrige_extraction"})
+        return jsonify({"status": "ok", "module": "gn_module_quadrige"})
 
     @bp.get("/export")
     def export():
@@ -145,7 +145,7 @@ def get_blueprint(config=None):
     return bp
 ```
 
-### 2.5 `backend/src/gn_module_quadrige_extraction/config_schema.py`
+### 2.5 `backend/src/gn_module_quadrige/config_schema.py`
 ```python
 from marshmallow import Schema, fields
 
@@ -162,8 +162,8 @@ def get_config_schema():
 ### 2.6 Alembic (migrations du module)
 ```bash
 # exemple d'initialisation de l'espace migrations du module
-mkdir -p backend/src/gn_module_quadrige_extraction/migrations/versions
-cat > backend/src/gn_module_quadrige_extraction/migrations/README.md << 'EOF'
+mkdir -p backend/src/gn_module_quadrige/migrations/versions
+cat > backend/src/gn_module_quadrige/migrations/README.md << 'EOF'
 Migrations Alembic du module QUADRIGE_EXTRACT (branche dédiée au module).
 EOF
 ```
@@ -175,7 +175,7 @@ EOF
 ### 3.1 `frontend/package.json`
 ```json
 {
-  "name": "gn_module_quadrige_extraction",
+  "name": "gn_module_quadrige",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -240,7 +240,7 @@ EOF
   "$schema": "https://json.schemastore.org/angular-workspace",
   "version": 1,
   "projects": {
-    "gn_module_quadrige_extraction": {
+    "gn_module_quadrige": {
       "projectType": "application",
       "root": "",
       "sourceRoot": "app",
@@ -248,7 +248,7 @@ EOF
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/gn_module_quadrige_extraction",
+            "outputPath": "dist/gn_module_quadrige",
             "index": "app/index.html",
             "main": "app/main.ts",
             "polyfills": ["zone.js"],
@@ -311,7 +311,7 @@ import { Component } from '@angular/core';
     <p>Démo d'intégration du MapList et d'un petit formulaire générique.</p>
 
     <!-- Exemple d'assets du module -->
-    <img src="assets/gn_module_quadrige_extraction/logo.png" alt="logo" width="120" />
+    <img src="assets/gn_module_quadrige/logo.png" alt="logo" width="120" />
 
     <!-- Exemple d'utilisation MapList (liste externe non montrée ici) -->
     <pnx-map-list idName="id_releve" height="60vh"></pnx-map-list>
@@ -323,7 +323,7 @@ export class QuadrigeExtractionComponent {}
 > Vous pourrez brancher le **MapListService** dans un composant parent si vous gérez une liste synchronisée.
 
 ### 3.7 Assets du module
-Placez vos fichiers dans `frontend/assets/gn_module_quadrige_extraction/` (ex : `logo.png`). Ces assets seront **symlinkés** vers `GeoNature/frontend/src/assets/` à l’installation du module.
+Placez vos fichiers dans `frontend/assets/gn_module_quadrige/` (ex : `logo.png`). Ces assets seront **symlinkés** vers `GeoNature/frontend/src/assets/` à l’installation du module.
 
 ---
 
@@ -331,7 +331,7 @@ Placez vos fichiers dans `frontend/assets/gn_module_quadrige_extraction/` (ex : 
 
 ### 4.1 Backend — venv Python 3.9
 ```bash
-cd ~/dev/gn_module_quadrige_extraction/backend
+cd ~/dev/gn_module_quadrige/backend
 python3.9 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
@@ -350,7 +350,7 @@ nvm use 18
 # Angular CLI 15
 npm i -g @angular/cli@15
 
-cd ~/dev/gn_module_quadrige_extraction/frontend
+cd ~/dev/gn_module_quadrige/frontend
 npm install
 ```
 
@@ -363,15 +363,15 @@ npm install
 1. **Installer le backend du module dans le venv de GeoNature** (le même que celui utilisé pour lancer GeoNature), pour que les entrypoints soient détectés :
    ```bash
    # Dans le venv de GeoNature (pas celui du module si distinct)
-   cd ~/dev/gn_module_quadrige_extraction/backend
+   cd ~/dev/gn_module_quadrige/backend
    source /chemin/vers/venv-geonature/bin/activate
    pip install -e .
    ```
 
 2. **Symlink des assets** vers le frontend GeoNature :
    ```bash
-   ln -sfn ~/dev/gn_module_quadrige_extraction/frontend/assets/gn_module_quadrige_extraction \
-         ~/geonature/frontend/src/assets/gn_module_quadrige_extraction
+   ln -sfn ~/dev/gn_module_quadrige/frontend/assets/gn_module_quadrige \
+         ~/geonature/frontend/src/assets/gn_module_quadrige
    ```
 
 3. **Réutiliser le serveur frontend de GeoNature** en dev :
