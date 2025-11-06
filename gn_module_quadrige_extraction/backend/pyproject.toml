@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gn_module_quadrige_extraction"
+version = "0.1.0"
+description = "Module GeoNature pour l'extraction Quadrige"
+readme = "../README.md"
+authors = [{ name = "Votre Nom", email = "vous@example.com" }]
+license = {text = "MIT"}
+requires-python = ">=3.9,<3.10"
+dependencies = [
+  "Flask==3.1.1",
+  "Flask-SQLAlchemy==3.0.5",
+  "SQLAlchemy>=1.4,<2.0",
+  "Marshmallow>=3.20,<4",
+  "alembic>=1.13,<2",
+  "geoalchemy2==0.17.1",
+]
+
+[project.entry-points."geonature.modules"]
+# Entrypoints attendus par GeoNature
+code = "gn_module_quadrige_extraction:MODULE_CODE"
+picto = "gn_module_quadrige_extraction:MODULE_PICTO"
+blueprint = "gn_module_quadrige_extraction.api.blueprint:get_blueprint"
+config_schema = "gn_module_quadrige_extraction.config_schema:get_config_schema"
+migrations = "gn_module_quadrige_extraction:migrations_path"
+alembic_branch = "gn_module_quadrige_extraction:ALEMBIC_BRANCH"
+tasks = "gn_module_quadrige_extraction.tasks:celery_tasks"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = {find = {where = ["src"]}}
+include-package-data = true
