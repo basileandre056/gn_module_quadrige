@@ -7,15 +7,14 @@ Les valeurs réelles seront surchargées par config/config_gn_module.toml
 dans l’installation GeoNature.
 """
 
-from marshmallow import Schema
-
+from marshmallow import Schema, fields
 
 class GnModuleSchemaConf(Schema):
-    # Pour l’instant, rien d’obligatoire :
-    # tu pourras ajouter des champs plus tard, par exemple :
-    #
-    # graphql_url = fields.Url(missing="https://quadrige-core.ifremer.fr/graphql/public")
-    # token = fields.String(required=True)
-    #
-    # etc.
-    pass
+    graphql_url = fields.Url(
+        missing="https://quadrige-core.ifremer.fr/graphql/public"
+    )
+    access_token = fields.String(
+        required=True,
+        description="Token d'accès Ifremer pour les extractions GraphQL"
+    )
+

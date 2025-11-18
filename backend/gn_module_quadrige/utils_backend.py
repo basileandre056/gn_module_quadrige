@@ -23,6 +23,10 @@ print(f"[QUADRIGE BACKEND] MEMORY_DIR      = {MEMORY_DIR}")
 print(f"[QUADRIGE BACKEND] OUTPUT_DATA_DIR = {OUTPUT_DATA_DIR}\n")
 
 
+def get_output_path(filename):
+    return os.path.join(OUTPUT_DATA_DIR, filename)
+
+
 def nettoyer_dossier_memory() -> None:
     """
     Supprime tous les anciens fichiers programmes dans MEMORY_DIR,

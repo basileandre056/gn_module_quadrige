@@ -1,8 +1,9 @@
-# backend/gn_module_quadrige/extraction_data.py
 import os
 import time
 import requests
+from .utils_backend import OUTPUT_DATA_DIR
 
+from flask import current_app
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 
@@ -15,12 +16,10 @@ def extract_ifremer_data(programmes, filter_data):
     la liste des URLs de fichiers ZIP fournis par Ifremer.
     """
 
-    graphql_url = "https://quadrige-core.ifremer.fr/graphql/public"
-    access_token = (
-        "2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:"
-        "39EA9640A2DE33C8FD909F1850462A3DBE17F0B28C4C90E1D1813EEB5BF59FAA:"
-        "1|KGHk/rHvlglDfKv8/E6DG+MLcAp0RpysnjW3lXMdg2vm4kwUXu+vIYfspTOLSAZVFX6IIj+jzgdDdcxwo16jBg=="
-    )
+    # 🔥 Récupération de la configuration TOML du module
+    conf = current_app.config["GN_MODULES"]["quadrige"]
+    graphql_url = conf["graphql_url"]
+    access_token = conf["access_token"]
 
     transport = RequestsHTTPTransport(
         url=graphql_url,
@@ -30,7 +29,8 @@ def extract_ifremer_data(programmes, filter_data):
     client = Client(transport=transport, fetch_schema_from_transport=False)
 
     download_links = []
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs(OUTPUT_DATA_DIR, exist_ok=True)
+
 
     for p in programmes:
         print(f"[extract_ifremer_data] Programme : {p}")
@@ -79,8 +79,8 @@ def extract_ifremer_data(programmes, filter_data):
         if not file_url:
             continue
 
-        # 3) Télécharger le ZIP en local (optionnel, surtout pour debug)
-        zip_path = os.path.join("outputs", os.path.basename(file_url))
+        # 3) Télécharger le ZIP en local (optionnel, debug)
+        zip_path = os.path.join(OUTPUT_DATA_DIR, os.path.basename(file_url))
         try:
             r = requests.get(file_url)
             r.raise_for_status()
@@ -90,7 +90,6 @@ def extract_ifremer_data(programmes, filter_data):
         except Exception as e:
             print(f"     ⚠️ Erreur lors du téléchargement : {e}")
 
-        # 4) Ajouter l'URL à la liste renvoyée au backend
         download_links.append(file_url)
 
     return download_links

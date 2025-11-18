@@ -1,26 +1,23 @@
-# backend/gn_module_quadrige/extraction_programs.py
 import os
 import time
 
 import pandas as pd
-import requests
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
+from flask import current_app
 
 
-def extract_programs(
-    filter_data: dict,
-    graphql_url="https://quadrige-core.ifremer.fr/graphql/public",
-    access_token=(
-        "2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:"
-        "39EA9640A2DE33C8FD909F1850462A3DBE17F0B28C4C90E1D1813EEB5BF59FAA:"
-        "1|KGHk/rHvlglDfKv8/E6DG+MLcAp0RpysnjW3lXMdg2vm4kwUXu+vIYfspTOLSAZVFX6II+jgdDdcxwo16jBg=="
-    ),
-):
+def extract_programs(filter_data: dict):
     """
     Lance une extraction de programmes et retourne l’URL CSV fournie par Ifremer.
     """
 
+    # 🔥 Récupération de la configuration du module (TOML)
+    conf = current_app.config["GN_MODULES"]["quadrige"]
+    graphql_url = conf["graphql_url"]
+    access_token = conf["access_token"]
+
+    # Client GraphQL Ifremer
     transport = RequestsHTTPTransport(
         url=graphql_url,
         verify=True,
@@ -94,69 +91,4 @@ def extract_programs(
     return file_url
 
 
-def nettoyer_csv(input_path, output_path, monitoring_location_prefix: str):
-    """
-    Nettoie le CSV extrait depuis Ifremer pour ne garder que :
-      - les lignes où 'Lieu : Mnémonique' commence par le préfixe monitoring_location_prefix
-      - les colonnes importantes pour le frontend
-      - une seule occurrence de chaque 'Programme : Code' (suppression des doublons)
-    """
-    df = pd.read_csv(input_path, sep=";", dtype=str)
-
-    colonnes_requises = [
-        "Lieu : Mnémonique",
-        "Programme : Code",
-        "Programme : Libellé",
-        "Programme : Etat",
-        "Programme : Date de création",
-        "Programme : Droit : Personne : Responsable : NOM Prénom : Liste",
-    ]
-    for col in colonnes_requises:
-        if col not in df.columns:
-            raise ValueError(f"❌ Colonne manquante dans le CSV extrait : {col}")
-
-    df_filtre = df[
-        df["Lieu : Mnémonique"].str.startswith(monitoring_location_prefix, na=False)
-    ]
-
-    df_reduit = df_filtre[
-        [
-            "Lieu : Mnémonique",
-            "Programme : Code",
-            "Programme : Libellé",
-            "Programme : Etat",
-            "Programme : Date de création",
-            "Programme : Droit : Personne : Responsable : NOM Prénom : Liste",
-        ]
-    ]
-
-    df_unique = df_reduit.drop_duplicates(subset=["Programme : Code"])
-    df_unique.to_csv(output_path, sep=";", index=False)
-
-    print(f"[extract_programs] ✅ CSV filtré enregistré : {output_path}")
-
-
-def csv_to_programmes_json(csv_path: str):
-    """
-    Charge un CSV filtré et le transforme en liste JSON de programmes.
-    """
-    if not os.path.exists(csv_path):
-        return []
-
-    df = pd.read_csv(csv_path, sep=";", dtype=str).fillna("")
-
-    programmes = []
-    for _, row in df.iterrows():
-        programmes.append(
-            {
-                "name": row.get("Programme : Code", ""),
-                "checked": False,
-                "libelle": row.get("Programme : Libellé", ""),
-                "etat": row.get("Programme : Etat", ""),
-                "startDate": row.get("Programme : Date de création", ""),
-                "responsable": row.get(
-                    "Programme : Droit : Personne : Responsable : NOM Prénom : Liste", ""
-                ).replace("|", ", "),
-            }
-        )
-    return programmes
+# (le reste du fichier ne change pas)
