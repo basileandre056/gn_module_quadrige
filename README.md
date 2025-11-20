@@ -1,48 +1,52 @@
-# Module GeoNature Quadrige
+
+# Module GeoNature Quadrige — Guide d'installation (corrigé)
 
 ## Présentation
 
-Le module **Quadrige** permet d'interfacer GeoNature avec l'API GraphQL
-d'Ifremer afin d'extraire : - la liste des programmes, - les données
-associées, - et les fichiers ZIP générés par Quadrige Core.
+Le module **Quadrige** permet d'interfacer GeoNature avec l'API GraphQL d'Ifremer afin d'extraire :
+- la liste des programmes,  
+- les données associées,  
+- et les fichiers ZIP générés par Quadrige Core.  
 
-Le module propose un backend Python/Flask intégré à GeoNature et un
-frontend Angular.
+Le module propose :
+- un **backend Python/Flask** intégré à GeoNature  
+- un **frontend Angular** intégré automatiquement via le module GeoNature  
 
-------------------------------------------------------------------------
-
+---
 
 # TO_DO.md — Préparation complète avant déploiement du module Quadrige
 
 ## 🟦 1. Accès au bastion via Apache Guacamole
 
-machine intermédiaire permettant d’établir une connexion sécurisée vers les serveurs internes, dont celui hébergeant GeoNature.
+**Guacamole** permet d’accéder à une VM Windows interne, depuis laquelle on se connecte en SSH au serveur GeoNature.
 
 ### Étapes :
-1. Ouvrir le navigateur.
-2. Désactiver le proxy :
-   - Paramètres réseau → Proxy → **Pas de proxy**
+1. Ouvrir un navigateur.  
+2. Désactiver le proxy (important).  
 3. Accéder à :
-   https://165.169.200.105/guacamole/
+
+   `https://165.169.200.105/guacamole/`
+
 4. Se connecter :
-   - **Login** : `rbouilly`
-   - **Mot de passe** : ...
+   - Login : `rbouilly`
+   - Mot de passe : *(fourni séparément)*
 
 Résultat attendu :  
-Connexion a apahe Guacamole
+Connexion à Apache Guacamole.
 
 ---
 
 ## 🟦 2. Comprendre les flux d’accès
 
-- **Guacamole** = Interface graphique qui donne accès **à une VM Windows**,
-- Depuis cette machine Windows, on doit **se connecter en SSH** au serveur GeoNature.
+- Guacamole → VM Windows  
+- VM Windows → SSH vers le serveur GeoNature
 
-il faut les informations suivantes:
+### Infos nécessaires :
 - IP du serveur GeoNature  
 - Identifiants SSH  
 - Port SSH éventuel  
-- Confirmation du chemin d’installation (souvent : `/home/geonatureadmin/geonature2`)
+- Chemin d'installation (souvent) :  
+  `/home/geonatureadmin/geonature2`
 
 ---
 
@@ -56,7 +60,7 @@ ssh geonatureadmin@IP_DU_SERVEUR
 
 Résultat attendu :
 
-```
+```bash
 geonatureadmin@geonature:~$
 ```
 
@@ -65,6 +69,7 @@ geonatureadmin@geonature:~$
 ## 🟦 4. Vérifications du serveur GeoNature
 
 ### 4.1 Vérifier les services
+
 ```bash
 sudo systemctl status geonature
 sudo systemctl status geonature-web
@@ -72,6 +77,7 @@ sudo systemctl status geonature-workers
 ```
 
 ### 4.2 Vérifier l’arborescence attendue
+
 ```bash
 ls /home/
 ls /home/geonatureadmin/
@@ -80,7 +86,9 @@ ls /home/geonatureadmin/geonature2/venv/
 ```
 
 ### 4.3 Vérifier Python / pip
+
 ```bash
+source /home/geonatureadmin/geonature2/venv/bin/activate
 python3 --version
 pip --version
 ```
@@ -91,7 +99,7 @@ pip --version
 
 ### 5.1 Vérifier la structure du projet
 
-```
+```text
 gn_module_quadrige/
   backend/
     gn_module_quadrige/
@@ -103,6 +111,9 @@ gn_module_quadrige/
       extraction_programs.py
       utils_backend.py
       migrations/
+  frontend/
+    angular.json
+    app/
   VERSION
   README.rst
   setup.py
@@ -113,10 +124,11 @@ gn_module_quadrige/
 ✔ `MODULE_CODE = "quadrige"`  
 ✔ Entrypoints définis dans `setup.py`
 
-### 5.2 Vérifier que le TOML existe
+### 5.2 Vérifier que le TOML d’exemple existe (local)
 
-Dans :
-```
+Dans le dépôt local :
+
+```text
 gn_module_quadrige/module_code_config.toml
 ```
 
@@ -128,13 +140,14 @@ graphql_url = "https://quadrige-core.ifremer.fr/graphql/public"
 access_token = "TOKEN_PRODUCTION"
 ```
 
-Voir pour déployer avec un token DEAL, Demander à Rémi si c'est nécéssaire
+(Le vrai token sera renseigné sur le serveur de prod.)
 
 ---
 
 ## 🟦 6. Installer le module Quadrige sur le serveur GeoNature
 
-### 6.1 Copier le module dans le serveur
+### 6.1 Cloner le module sur le serveur
+
 Sur le serveur :
 
 ```bash
@@ -143,30 +156,43 @@ git clone https://github.com/basileandre056/gn_module_quadrige.git
 cd gn_module_quadrige
 ```
 
-### 6.2 Installer dans l’environnement Python de GeoNature
+> Adapter le chemin `/home/geonatureadmin/modules` si une autre convention est utilisée sur le serveur.
+
+### 6.2 Installer le module dans l’environnement Python de GeoNature
+
 ```bash
 source /home/geonatureadmin/geonature2/venv/bin/activate
 pip install .
 ```
 
-### 6.3 Ajouter le module au fichier de configuration GeoNature
+Cela va :
+- installer le backend du module,
+- enregistrer les entry_points `gn_module`,
+- rendre le module visible pour GeoNature.
+
+### 6.3 Activer le module dans la configuration GeoNature
+
 Éditer :
-```
-/home/geonatureadmin/geonature2/config/geonature_config.toml
+
+```bash
+nano /home/geonatureadmin/geonature2/config/geonature_config.toml
 ```
 
-Ajouter dans `[modules]` :
-NE PAS remplacer la liste, mais ajouter "quadrige" dedans.
+Dans la section `[modules]`, ajouter `quadrige` à la liste des modules activés. Exemple :
 
 ```toml
-enabled = ["quadrige"]
+[modules]
+enabled = ["synthese", "validation", "quadrige"]
 ```
 
-### 6.4 Créer la configuration TOML du module
+⚠ Ne pas écraser la liste existante, **ajouter** seulement `"quadrige"`.
+
+### 6.4 Créer la configuration TOML du module Quadrige
+
 Créer le fichier :
 
-```
-/home/geonatureadmin/geonature2/config/gn_module_quadrige.toml
+```bash
+nano /home/geonatureadmin/geonature2/config/gn_module_quadrige.toml
 ```
 
 Contenu :
@@ -177,9 +203,30 @@ graphql_url = "https://quadrige-core.ifremer.fr/graphql/public"
 access_token = "TOKEN_DE_PRODUCTION"
 ```
 
+👉 Demander le token adapté (DEAL, prod Ifremer, etc.).
+
 ---
 
-## 🟦 7. Redémarrer GeoNature
+## 🟦 7. Compilation du frontend GeoNature (obligatoire)
+
+Le module Quadrige contient un frontend Angular.  
+GeoNature doit reconstruire son frontend global pour intégrer le module.
+
+```bash
+cd /home/geonatureadmin/geonature2/frontend
+npm install          # si nécessaire (ou déjà fait)
+npm run build
+```
+
+Résultat attendu :
+- pas d’erreur Angular,
+- build terminé sans échec.
+
+---
+
+## 🟦 8. Redémarrer GeoNature
+
+Redémarrer les services backend + frontend :
 
 ```bash
 sudo systemctl restart geonature
@@ -187,7 +234,7 @@ sudo systemctl restart geonature-web
 sudo systemctl restart geonature-workers
 ```
 
-Vérifier :
+Suivre les logs si besoin :
 
 ```bash
 sudo journalctl -u geonature -f
@@ -195,27 +242,38 @@ sudo journalctl -u geonature -f
 
 ---
 
-## 🟦 8. Vérification du chargement du module
+## 🟦 9. Vérification du chargement du module
 
-Test simple :
+### 9.1 Tester l’API backend
+
+Depuis le serveur :
 
 ```bash
-curl http://localhost:8000/quadrige/last-programmes
+curl http://localhost/api/quadrige/last-programmes
 ```
 
-Résultat attendu :  
-Une réponse JSON (pas une erreur Flask ou Apache).
+Résultat attendu :
+- une réponse JSON (même vide),
+- **pas** d’erreur 500 Flask/Apache.
+
+### 9.2 Tester le frontend
+
+Dans un navigateur :
+
+```text
+https://VOTRE_SERVEUR/quadrige
+```
+
+Le frontend du module Quadrige doit s’afficher (liste des programmes, filtres, etc.).
 
 ---
 
-## 🟦 9. Tests des extractions Quadrige
+## 🟦 10. Tests des extractions Quadrige
 
-### 9.1 Extraction d’un programme
+### 10.1 Extraction d’un programme (exemple)
 
 ```bash
-curl -X POST http://127.0.0.1:5001/quadrige/data-extractions \
-  -H "Content-Type: application/json" \
-  -d '{
+curl -X POST http://localhost/api/quadrige/data-extractions   -H "Content-Type: application/json"   -d '{
         "programmes": [
           "ORC_MAYOTTE_BELT_POISSONS"
         ],
@@ -224,15 +282,12 @@ curl -X POST http://127.0.0.1:5001/quadrige/data-extractions \
           "fields": ["MONITORING_LOCATION_NAME"]
         }
       }'
-
 ```
 
-### 9.2 Extraction de plusieurs programmes
+### 10.2 Extraction de plusieurs programmes
 
 ```bash
-curl -X POST http://127.0.0.1:5001/quadrige/data-extractions \
-  -H "Content-Type: application/json" \
-  -d '{
+curl -X POST http://localhost/api/quadrige/data-extractions   -H "Content-Type: application/json"   -d '{
         "programmes": [
           "ORC_MAYOTTE_BELT_POISSONS",
           "ORC_MAYOTTE_LIT_BENTHOS",
@@ -246,46 +301,47 @@ curl -X POST http://127.0.0.1:5001/quadrige/data-extractions \
 ```
 
 Résultat attendu :
-- Plusieurs ZIP générés  
-- Si 1 programme échoue → les autres continuent  
-- Aucun crash  
+- Plusieurs ZIP générés et sauvegardés,
+- Si 1 programme échoue → les autres continuent,
+- Aucun crash du backend.
 
 ---
 
-## 🟦 10. Checklist à valider jeudi
+## 🟦 11. Checklist à valider
 
-| Tâche | Statut |
-|------|--------|
-| Accès Guacamole OK | ✅ |
-| Accès SSH au serveur GeoNature OK | ⬜ |
-| GeoNature installé et accessible | ⬜ |
-| Module Quadrige installé (pip install) | ⬜ |
-| TOML module créé | ⬜ |
-| Module activé dans geonature_config | ⬜ |
-| Services redémarrés | ⬜ |
-| API du module accessible | ⬜ |
-| Extraction simple OK | ⬜ |
-| Extraction multiple OK | ⬜ |
+| Tâche                                 | Statut |
+|--------------------------------------|--------|
+| Accès Guacamole OK                   | ⬜ |
+| Accès SSH au serveur GeoNature OK    | ⬜ |
+| GeoNature installé et accessible     | ⬜ |
+| Module Quadrige cloné                | ⬜ |
+| Module Quadrige installé (pip)       | ⬜ |
+| Module activé dans geonature_config  | ⬜ |
+| TOML module créé                     | ⬜ |
+| Frontend GeoNature rebuild           | ⬜ |
+| Services redémarrés                  | ⬜ |
+| API du module accessible             | ⬜ |
+| Extraction simple OK                 | ⬜ |
+| Extraction multiple OK               | ⬜ |
 
 ---
 
-Fin du document.
+## Vérifications rapides
 
-------------------------------------------------------------------------
+### Tester que la configuration est chargée
 
-## Vérifications
+```text
+https://votre-geonature/api/quadrige/debug_config
+```
 
-### Tester que la configuration est chargée :
+### Accéder au frontend
 
-    https://votre-geonature/api/quadrige/debug_config
+```text
+https://votre-geonature/quadrige
+```
 
-### Accéder au frontend :
-
-    https://votre-geonature/quadrige
-
-------------------------------------------------------------------------
+---
 
 ## Contact & Support
 
-Pour toute question technique ou demande d'amélioration, contactez le
-mainteneur du module.
+Pour toute question technique ou demande d'amélioration, contacter le mainteneur du module.
