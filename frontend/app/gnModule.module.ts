@@ -15,7 +15,11 @@ import { MatCardModule } from '@angular/material/card';
 
 import { GN2CommonModule } from '@geonature_common/GN2Common.module';
 
+
 // 🔹 Import des composants du module Quadrige
+import { AppComponent } from './app.component';
+
+
 import { ProgrammeListComponent } from './programme-list/programme-list.component';
 import { FrontendFilterComponent } from './frontend-filter/frontend-filter.component';
 import { ProgramExtractionFilterComponent } from './program-extraction-filter/program-extraction-filter.component';
@@ -23,11 +27,14 @@ import { ExtractedLinksComponent } from './extracted-links/extracted-links.compo
 
 @NgModule({
   declarations: [
+    AppComponent,
     ProgrammeListComponent,
     FrontendFilterComponent,
     ProgramExtractionFilterComponent,
     ExtractedLinksComponent,
   ],
+  bootstrap: [AppComponent],
+  
   imports: [
     MatFormFieldModule,
     MatInputModule,

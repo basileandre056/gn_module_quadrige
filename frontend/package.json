@@ -2,8 +2,6 @@
   "name": "gn_module_quadrige_frontend",
   "version": "1.0.0",
   "private": true,
-  "description": "Frontend du module Quadrige pour GeoNature",
-  "dependencies": {
-    "@geonature_common/GN2Common.module": "*"
-  }
+  "description": "Frontend du module Quadrige pour GeoNature"
+  
 }
