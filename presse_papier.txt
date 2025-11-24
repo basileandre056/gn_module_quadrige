@@ -1,0 +1,1 @@
+python -c "import pkg_resources; print([ep.name for ep in pkg_resources.iter_entry_points('gn_module')])"
