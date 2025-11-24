@@ -9,7 +9,7 @@ with (root_dir / 'VERSION').open() as f:
 with (root_dir / 'README.rst').open() as f:
     long_description = f.read()
 
-with (root_dir / 'requirements_backend.txt').open() as f:
+with (root_dir / 'requirements.txt').open() as f:
     requirements = f.read().splitlines()
 
 

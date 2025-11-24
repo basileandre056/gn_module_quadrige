@@ -1,5 +1,5 @@
 
-# Module GeoNature Quadrige — Guide d'installation (corrigé)
+# Module GeoNature Quadrige — Guide d'installation
 
 ## Présentation
 
@@ -144,101 +144,108 @@ access_token = "TOKEN_PRODUCTION"
 
 ---
 
-## 🟦 6. Installer le module Quadrige sur le serveur GeoNature
+# 🟦 6. Installation du module Quadrige sur le serveur GeoNature
 
-### 6.1 Cloner le module sur le serveur
+Cette partie a été **mise à jour pour intégrer les étapes obligatoires issues de la documentation officielle GeoNature**.
 
-Sur le serveur :
-
+## 6.1 Télécharger le module
 ```bash
 cd /home/geonatureadmin/modules
 git clone https://github.com/basileandre056/gn_module_quadrige.git
-cd gn_module_quadrige
 ```
 
-> Adapter le chemin `/home/geonatureadmin/modules` si une autre convention est utilisée sur le serveur.
+---
 
-### 6.2 Installer le module dans l’environnement Python de GeoNature
+## 6.2 Installation du backend (méthode officielle : mode éditable)
+
+> ⚠ Le mode *editable* est recommandé par l’équipe GeoNature pour faciliter les mises à jour et les correctifs.
 
 ```bash
-source /home/geonatureadmin/geonature2/venv/bin/activate
-pip install .
+source ~/geonature2/venv/bin/activate
+pip install --editable /home/geonatureadmin/modules/gn_module_quadrige
+sudo systemctl restart geonature
 ```
 
-Cela va :
-- installer le backend du module,
-- enregistrer les entry_points `gn_module`,
-- rendre le module visible pour GeoNature.
+---
 
-### 6.3 Activer le module dans la configuration GeoNature
+## 6.3 Installation du frontend (méthode officielle)
 
-Éditer :
+### 6.3.1 Créer le lien symbolique
+
+GeoNature utilise `frontend/external_modules` pour intégrer les modules Angular.
 
 ```bash
-nano /home/geonatureadmin/geonature2/config/geonature_config.toml
+cd ~/geonature2/frontend/external_modules/
+ln -s /home/geonatureadmin/modules/gn_module_quadrige/frontend quadrige
 ```
 
-Dans la section `[modules]`, ajouter `quadrige` à la liste des modules activés. Exemple :
+*(Le nom du lien doit être le **code du module en minuscule** : `quadrige`)*
 
-```toml
-[modules]
-enabled = ["synthese", "validation", "quadrige"]
+### 6.3.2 Rebuild du frontend global
+```bash
+cd ~/geonature2/frontend/
+nvm use
+npm run build
 ```
 
-⚠ Ne pas écraser la liste existante, **ajouter** seulement `"quadrige"`.
+---
 
-### 6.4 Créer la configuration TOML du module Quadrige
+## 6.4 Installation de la base de données du module
 
-Créer le fichier :
+Si le module intègre un schéma, migrations ou tables spécifiques :
 
 ```bash
-nano /home/geonatureadmin/geonature2/config/gn_module_quadrige.toml
+source ~/geonature2/venv/bin/activate
+geonature upgrade-modules-db quadrige
+```
+
+---
+
+## 6.5 Configuration du module via GeoNature
+
+Créer :
+```bash
+nano ~/geonature2/config/quadrige_config.toml
 ```
 
 Contenu :
-
 ```toml
 [quadrige]
 graphql_url = "https://quadrige-core.ifremer.fr/graphql/public"
 access_token = "TOKEN_DE_PRODUCTION"
 ```
 
-👉 Demander le token adapté (DEAL, prod Ifremer, etc.).
-
----
-
-## 🟦 7. Compilation du frontend GeoNature (obligatoire)
-
-Le module Quadrige contient un frontend Angular.  
-GeoNature doit reconstruire son frontend global pour intégrer le module.
-
+### Rechargement automatique (GeoNature ≥ 2.12)
 ```bash
-cd /home/geonatureadmin/geonature2/frontend
-npm install          # si nécessaire (ou déjà fait)
-npm run build
+sudo systemctl daemon-reload
+sudo systemctl restart geonature
 ```
 
-Résultat attendu :
-- pas d’erreur Angular,
-- build terminé sans échec.
+### Anciennes versions (< 2.12)
+```bash
+sudo systemctl reload geonature
+```
 
 ---
 
-## 🟦 8. Redémarrer GeoNature
-
-Redémarrer les services backend + frontend :
-
+# 🟦 7. Redémarrer GeoNature
 ```bash
 sudo systemctl restart geonature
 sudo systemctl restart geonature-web
 sudo systemctl restart geonature-workers
 ```
 
-Suivre les logs si besoin :
+---
 
+# 🟦 8. Vérification du chargement du module
+
+### API backend
 ```bash
-sudo journalctl -u geonature -f
+curl http://localhost/api/quadrige/last-programmes
 ```
+
+### Frontend
+`https://VOTRE_SERVEUR/quadrige`
 
 ---
 
