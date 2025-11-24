@@ -1,5 +1,15 @@
-installation 👍
+tests :
 
+python -c "import pkg_resources; print([ep.name for ep in pkg_resources.iter_entry_points('gn_module')])"
+pip list | grep gn_module_quadrige
+pip show gn_module_quadrige
+
+pip uninstall gn_module_quadrige
+pip uninstall gn_module_quadrige   # parfois nécessaire 2 ou 3 fois
+
+sudo journalctl -xe --no-pager | grep -i "geonature"
+
+sudo journalctl -u geonature -n 50 --no-pager
 
 Installation manuelle
 Installation du backend
@@ -93,22 +103,3 @@ git submodule update # ou "git config submodule.recurse true" lancé une seule f
 
 
 
-tests :
-
-
-
-python -c "import pkg_resources; print([ep.name for ep in pkg_resources.iter_entry_points('gn_module')])"
-pip list | grep gn_module_quadrige
-pip show gn_module_quadrige
-
-
-pip uninstall gn_module_quadrige
-pip uninstall gn_module_quadrige   # parfois nécessaire 2 ou 3 fois
-
-
-
-
-sudo journalctl -xe --no-pager | grep -i "geonature"
-
-
-sudo journalctl -u geonature -n 50 --no-pager
