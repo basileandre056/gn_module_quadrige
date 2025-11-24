@@ -108,5 +108,7 @@ pip uninstall gn_module_quadrige   # parfois nécessaire 2 ou 3 fois
 
 
 
+sudo journalctl -xe --no-pager | grep -i "geonature"
 
 
+sudo journalctl -u geonature -n 50 --no-pager
