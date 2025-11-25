@@ -2,6 +2,6 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'quadrige-root',
-  template: `<programme-list></programme-list>`
+  template: `<app-programme-list></app-programme-list>`
 })
 export class AppComponent {}
