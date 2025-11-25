@@ -2,6 +2,11 @@
   "name": "gn_module_quadrige_frontend",
   "version": "1.0.0",
   "private": true,
-  "description": "Frontend du module Quadrige pour GeoNature"
+  "description": "Frontend du module Quadrige pour GeoNature",
+  "geonature": {
+    "type": "external-module",
+    "code": "quadrige"
+  }
   
+
 }

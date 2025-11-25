@@ -3,10 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatRippleModule } from '@angular/material/core';
+
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -60,6 +64,7 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     HttpClientModule,
 
     // Material
+    MatTooltipModule,
     MatRippleModule,
     MatFormFieldModule,
     MatInputModule,
@@ -79,5 +84,7 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
   ],
 
   bootstrap: [AppComponent],
+
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class GnModuleQuadrigeModule {}
