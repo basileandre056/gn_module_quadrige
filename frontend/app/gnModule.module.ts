@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -64,6 +68,9 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     MatProgressSpinnerModule,
     MatCheckboxModule,
     MatCardModule,
+    MatChipsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
 
     // GeoNature
     GN2CommonModule,

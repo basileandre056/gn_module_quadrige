@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+
 
 export interface QuadrigeConfig {
   locations: { code: string; label: string }[];
@@ -29,7 +29,8 @@ export class QuadrigeConfigService {
     const url = `${this.API}/config`;
 
     try {
-      const data = await firstValueFrom(this.http.get<QuadrigeConfig>(url));
+      const data = await this.http.get<QuadrigeConfig>(url).toPromise();
+
       this.config = data;
       console.log('[CONFIG] Config chargée :', this.config);
     } catch (error) {
