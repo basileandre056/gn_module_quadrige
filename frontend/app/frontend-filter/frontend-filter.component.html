@@ -51,12 +51,6 @@
   </mat-option>
 </mat-autocomplete>
 
-
-      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="addField($event.option.value)">
-        <mat-option *ngFor="let field of remainingFields" [value]="field">
-          {{ field }}
-        </mat-option>
-      </mat-autocomplete>
     </mat-form-field>
 
     <mat-error *ngIf="fieldsInvalid" class="error-msg">

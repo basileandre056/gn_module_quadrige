@@ -21,13 +21,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
+import { MatSortModule } from '@angular/material/sort';
 
 import { GN2CommonModule } from '@geonature_common/GN2Common.module';
 
 import { QuadrigeConfigService } from './services/quadrige-config.service';
 
 // 🔹 Composants Quadrige
-import { AppComponent } from './app.component';
 import { ProgrammeListComponent } from './programme-list/programme-list.component';
 import { FrontendFilterComponent } from './frontend-filter/frontend-filter.component';
 import { ProgramExtractionFilterComponent } from './program-extraction-filter/program-extraction-filter.component';
@@ -40,7 +40,6 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
 
 @NgModule({
   declarations: [
-    AppComponent,
     ProgrammeListComponent,
     FrontendFilterComponent,
     ProgramExtractionFilterComponent,
@@ -64,6 +63,7 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     HttpClientModule,
 
     // Material
+    MatSortModule,
     MatTooltipModule,
     MatRippleModule,
     MatFormFieldModule,
@@ -83,7 +83,7 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     GN2CommonModule,
   ],
 
-  bootstrap: [AppComponent],
+  
 
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

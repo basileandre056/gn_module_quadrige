@@ -1,5 +1,0 @@
-# gn_module_quadrige/module_code_config.toml.example
-
-[quadrige]
-graphql_url = "VOTRE_URL"
-access_token = "VOTRE_TOKEN"
