@@ -87,4 +87,4 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
 
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class GnModuleQuadrigeModule {}
+export class GeonatureModule  {}
