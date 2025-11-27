@@ -95,7 +95,22 @@ const defaultRoutes: Routes = [
           ).then((m) => m.ImportsModule),
       },
 
-
+      // --------------------------------------------------------------------
+      // >>> AJOUT : route module QUADRIGE (module externe)
+      // --------------------------------------------------------------------
+      {
+        path: 'quadrige',
+        data: { module_code: 'QUADRIGE' },
+        canActivate: [ModuleGuardService],
+        loadChildren: () =>
+          import(
+            /* webpackChunkName: "quadrige" */
+            '../../../external_modules/quadrige/app/gnModule.module'
+          ).then((m) => m.GeonatureModule),
+      },
+      // --------------------------------------------------------------------
+      // >>> FIN AJOUT
+      // --------------------------------------------------------------------
 
       {
         path: 'notification',
