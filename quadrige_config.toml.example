@@ -1,21 +1,18 @@
-# ----------------------------------------
-# CONFIGURATION GENERALE DU MODULE QUADRIGE
-# ----------------------------------------
+# -------- CONFIG FRONTEND -------
+MODULE_CODE = "QUADRIGE"
+MODULE_URL  = "/quadrige"
+TITLE_MODULE = "Module Quadrige"
+DESCRIPTION_MODULE = "Extraction Quadrige – Ifremer"
+ICON = "assets/quadrige/picto.png"
 
-#Fichier temporaire qu'il faut mettre dans : ~/geonature/config/quadrige_config.toml
- 
-#puis executer geonature upgrade module quadrige
+[PERMISSION_LEVEL]
+module = "QUADRIGE_MODULES"
 
-# URL publique GraphQL Quadrige
+# -------- CONFIG BACKEND -------
 graphql_url = "https://quadrige-core.ifremer.fr/graphql/public"
-
-# Token utilisé pour les extractions
 access_token = "2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:39EA9640A2DE33C8FD909F1850462A3DBE17F0B28C4C90E1D1813EEB5BF59FAA:1|KGHk/rHvlglDfKv8/E6DG+MLcAp0RpysnjW3lXMdg2vm4kwUXu+vIYfspTOLSAZVFX6IIj+jzgdDdcxwo16jBg=="
 
-
-# ----------------------------------------
-# LIEUX — configurables librement
-# ----------------------------------------
+# Lieux Ifremer
 locations = [
   { code = "126-", label = "Réunion" },
   { code = "145-", label = "Mayotte" },
@@ -27,10 +24,7 @@ locations = [
   { code = "156-", label = "Île Europa" }
 ]
 
-
-# ----------------------------------------
-# CHAMPS D'EXTRACTION DISPONIBLES
-# ----------------------------------------
+# Champs d'extraction
 extractable_fields = [
   "MEASUREMENT_COMMENT",
   "MEASUREMENT_PMFMU_METHOD_NAME",
@@ -69,4 +63,3 @@ extractable_fields = [
   "SURVEY_TIME",
   "SURVEY_UNDER_MORATORIUM"
 ]
-
