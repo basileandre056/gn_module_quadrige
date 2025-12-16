@@ -5,8 +5,7 @@ TITLE_MODULE = "Module Quadrige"
 DESCRIPTION_MODULE = "Extraction Quadrige – Ifremer"
 ICON = "assets/quadrige/picto.png"
 
-[PERMISSION_LEVEL]
-module = "QUADRIGE_MODULES"
+PERMISSION_LEVEL = { module = "QUADRIGE_MODULES" }
 
 # -------- CONFIG BACKEND -------
 graphql_url = "https://quadrige-core.ifremer.fr/graphql/public"
