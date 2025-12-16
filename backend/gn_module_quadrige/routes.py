@@ -95,9 +95,12 @@ def init_routes(bp):
 
         if not monitoring_location:
             return jsonify({
-                "status": "error",
-                "message": "Aucun filtre trouvé (ni reçu, ni sauvegardé).",
-            }), 400
+                "status": "empty",
+                "message": "Aucun filtre encore défini.",
+                "fichiers_csv": [],
+                "programmes": [],
+            }), 200
+
 
         try:
             brut_path = os.path.join(
@@ -235,12 +238,17 @@ def init_routes(bp):
             })
 
         return jsonify({
-            "status": "ok" if programmes else "empty",
-            "message": "Aucun programme sauvegardé" if not programmes else f"{len(programmes)} programmes trouvés",
-            "programmes": programmes,
-            "monitoringLocation": monitoring_location,
-            "fichiers_csv": fichiers_csv,
-        }), 200
+                "status": "ok" if programmes else "empty",
+                "message": (
+                    f"{len(programmes)} programmes trouvés"
+                    if programmes else
+                    "Aucun programme sauvegardé"
+                ),
+                "programmes": programmes,
+                "monitoringLocation": monitoring_location or None,
+                "fichiers_csv": fichiers_csv,
+            }), 200
+
 
 
 

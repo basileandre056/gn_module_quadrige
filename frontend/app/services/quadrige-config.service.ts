@@ -30,9 +30,8 @@ export class QuadrigeConfigService {
     const url = `${this.API}/config`;
 
     try {
-      const data = await this.http.get<QuadrigeConfig>(url).toPromise();
-
-      this.config = data;
+      const res = await this.http.get<any>(url).toPromise();
+      this.config = res.config ?? { locations: [], extractable_fields: [] };
       console.log('[CONFIG] Config chargée :', this.config);
     } catch (error) {
       console.error('[CONFIG] Erreur de chargement config :', error);
