@@ -17,7 +17,8 @@ export class QuadrigeConfigService {
     extractable_fields: []
   };
 
-  private API = '/api/quadrige';
+  private API = '/geonature/api/quadrige';
+;
 
   constructor(private http: HttpClient) {}
 

@@ -49,7 +49,8 @@ locations: {code: string; label: string}[] = [];
   monitoringLocation: string = '';
   monitoringLabel: string = '';
 
-  private API = '/api/quadrige';
+  private API = '/geonature/api/quadrige';
+
 
   private locationLabels = [
     { code: '126-', label: 'Réunion' },
