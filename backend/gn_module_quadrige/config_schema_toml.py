@@ -1,6 +1,8 @@
 from marshmallow import Schema, fields
 
-from marshmallow import Schema, fields
+class PermissionLevelSchema(Schema):
+    module = fields.String(required=True)
+
 
 class GnModuleSchemaConf(Schema):
 
