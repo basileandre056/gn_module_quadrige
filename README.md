@@ -217,11 +217,10 @@ sudo systemctl reload geonature
 Depuis le serveur :
 
 ```bash
-curl http://......./api/quadrige/config"
-```
+curl http://10.172.2.156/geonature/api/quadrige/config
 
 Résultat attendu :
-- une réponse JSON (même vide),
+- une réponse JSON avec la config chargée et exposée par GeoNature,
 - **pas** d’erreur 500 Flask/Apache.
 
 ### 9.2 Tester le frontend
@@ -229,7 +228,7 @@ Résultat attendu :
 Dans un navigateur :
 
 ```text
-https://......../#/quadrige
+http://10.172.2.156/geonature/#/quadrige
 ```
 
 Le frontend du module Quadrige doit s’afficher (liste des programmes, filtres, etc.).
