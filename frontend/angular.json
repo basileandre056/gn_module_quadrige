@@ -1,45 +1,4 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1,
-  "projects": {
-    "quadrige": {
-      "projectType": "application",
-      "root": "",
-      "sourceRoot": "app",
-      "prefix": "app",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:browser",
-          "options": {
-            "outputPath": "dist/quadrige",
-            "index": "app/index.html",
-            "main": "app/main.ts",
-            "polyfills": "app/polyfills.ts",
-            "tsConfig": "tsconfig.app.json",
-            "aot": true,
-            "assets": [
-              "assets"
-            ],
-            "styles": [
-              "app/styles.scss"
-            ],
-            "scripts": []
-          },
-          "configurations": {
-            "production": {
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "extractCss": true,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true
-            }
-          }
-        }
-      }
-    }
-  },
-  "defaultProject": "quadrige"
+  "version": 1
 }
