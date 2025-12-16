@@ -47,7 +47,7 @@ setuptools.setup(
             "picto = gn_module_quadrige:MODULE_PICTO",
             "blueprint = gn_module_quadrige.blueprint:blueprint",
             "config_schema = gn_module_quadrige.config_schema_toml:GnModuleSchemaConf",
-            "migrations = gn_module_monitoring:migrations",
+            "migrations = gn_module_quadrige:migrations",
 
 
         ],
