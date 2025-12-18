@@ -1,4 +1,4 @@
-import { NgModule, APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { CommonModule } from '@angular/common';
@@ -85,6 +85,5 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     },
   ],
 
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class GeonatureModule  {}
