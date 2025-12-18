@@ -1,22 +1,20 @@
-import { Component, EventEmitter, Output, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
-import { Observable } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { QuadrigeConfigService } from '../../services/quadrige-config.service';
 
 @Component({
   selector: 'app-program-extraction-filter',
   templateUrl: './program-extraction-filter.component.html',
-  styleUrls: ['./program-extraction-filter.component.scss']
+  styleUrls: ['./program-extraction-filter.component.scss'],
 })
 export class ProgramExtractionFilterComponent implements OnInit {
   @Output() apply = new EventEmitter<any>();
   @Output() close = new EventEmitter<void>();
 
   filterForm!: FormGroup;
-  sugested_locations: { code: string; label: string }[] = [];
 
-  filteredLocations$!: Observable<any[]>;
+  // Liste fournie au composant GN
+  locations: { code: string; label: string }[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -24,28 +22,14 @@ export class ProgramExtractionFilterComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Récupération des lieux depuis la config
-    this.sugested_locations = this.configService.config.locations;
+    // Chargement des lieux depuis la config GN
+    this.locations = this.configService.config.locations ?? [];
 
-    // Initialisation du formulaire
+    // Formulaire piloté (Reactive Forms)
     this.filterForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      monitoringLocation: new FormControl<string>('', Validators.required)
+      monitoringLocation: [null, Validators.required],
     });
-
-    const monitoringCtrl = this.filterForm.get('monitoringLocation') as FormControl<string>;
-
-    this.filteredLocations$ = monitoringCtrl.valueChanges.pipe(
-      startWith(''),
-      map((value: string) => this.filterLocations(value || ''))
-    );
-  }
-
-  private filterLocations(value: string): any[] {
-    const f = value.toLowerCase();
-    return this.sugested_locations.filter(loc =>
-      loc.label.toLowerCase().includes(f) || loc.code.toLowerCase().includes(f)
-    );
   }
 
   isFormValid(): boolean {

@@ -1,52 +1,58 @@
-<div class="filter-card mat-elevation-z4" [formGroup]="filterForm">
+<div class="filter-card" [formGroup]="filterForm">
   <h2>Mettre à jour la liste des programmes</h2>
 
   <!-- 🧩 Nom du filtre -->
-  <mat-form-field appearance="outline" class="w-100 mb-3">
-    <mat-label>Nom du filtre</mat-label>
-    <input
-      matInput
-      formControlName="name"
-      placeholder="Nom du filtre"
-      (blur)="filterForm.get('name')?.markAsTouched()" />
+  <pnx-input
+    [parentFormControl]="filterForm.controls.name"
+    label="Nom du filtre"
+    placeholder="Nom du filtre">
+  </pnx-input>
 
-    <mat-error *ngIf="filterForm.get('name')?.touched && filterForm.get('name')?.hasError('required')">
-      Le nom du filtre est requis.
-    </mat-error>
-    <mat-error *ngIf="filterForm.get('name')?.touched && filterForm.get('name')?.hasError('minlength')">
-      Le nom du filtre doit faire au moins 3 caractères.
-    </mat-error>
-  </mat-form-field>
+  <div
+    class="error-msg"
+    *ngIf="
+      filterForm.controls.name.touched &&
+      filterForm.controls.name.invalid
+    ">
+    Le nom du filtre doit contenir au moins 3 caractères.
+  </div>
 
-  <!-- 📍 Lieu -->
-  <mat-form-field appearance="outline" class="w-100 mb-3">
-    <mat-label>Code du lieu d'observation</mat-label>
-    <input
-      type="text"
-      matInput
-      formControlName="monitoringLocation"
-      [matAutocomplete]="auto"
-      placeholder="Ex: 145- ou Mayotte" />
+  <!-- 📍 Lieu d’observation -->
+  <pnx-select
+    [parentFormControl]="filterForm.controls.monitoringLocation"
+    [items]="locations"
+    itemLabel="label"
+    itemValue="code"
+    label="Lieu d’observation"
+    [searchBar]="true">
+  </pnx-select>
 
-    <mat-autocomplete #auto="matAutocomplete">
-      <mat-option *ngFor="let loc of filteredLocations$ | async" [value]="loc.code">
-        {{ loc.label }} — <span class="code">{{ loc.code }}</span>
-      </mat-option>
-    </mat-autocomplete>
-
-    <mat-error *ngIf="filterForm.get('monitoringLocation')?.touched && filterForm.get('monitoringLocation')?.hasError('required')">
-      Sélectionnez un lieu dans la liste.
-    </mat-error>
-  </mat-form-field>
+  <div
+    class="error-msg"
+    *ngIf="
+      filterForm.controls.monitoringLocation.touched &&
+      filterForm.controls.monitoringLocation.invalid
+    ">
+    Sélectionnez un lieu dans la liste.
+  </div>
 
   <!-- ✅ Actions -->
   <div class="filter-actions">
-    <button mat-raised-button class="button-success" [disabled]="!isFormValid()" (click)="applyFilter()">
-      <mat-icon>check_circle</mat-icon> Valider
+    <button
+      mat-raised-button
+      class="button-success"
+      [disabled]="!isFormValid()"
+      (click)="applyFilter()">
+      <mat-icon>check_circle</mat-icon>
+      Valider
     </button>
 
-    <button mat-raised-button color="warn" (click)="close.emit()">
-      <mat-icon>close</mat-icon> Fermer
+    <button
+      mat-raised-button
+      color="warn"
+      (click)="close.emit()">
+      <mat-icon>close</mat-icon>
+      Fermer
     </button>
   </div>
 </div>
