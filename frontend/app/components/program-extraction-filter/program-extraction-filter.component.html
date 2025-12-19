@@ -1,40 +1,33 @@
-<div class="filter-card" [formGroup]="filterForm">
+<form class="filter-card" [formGroup]="filterForm">
+
   <h2>Mettre à jour la liste des programmes</h2>
 
-  <!-- 🧩 Nom du filtre -->
   <pnx-input
     label="Nom du filtre"
-    placeholder="Nom du filtre"
-    [parentFormControl]="filterForm.controls.name">
+    formControlName="name">
   </pnx-input>
 
-  <!-- 📍 Lieu -->
   <pnx-select
     label="Lieu d’observation"
-    [parentFormControl]="filterForm.controls.monitoringLocation"
+    formControlName="monitoringLocation"
     [options]="sugested_locations"
     optionLabel="label"
     optionValue="code"
     [searchBar]="true">
   </pnx-select>
 
-  <!-- ✅ Actions -->
   <div class="filter-actions">
-    <button
-      mat-raised-button
-      class="button-success"
-      [disabled]="filterForm.invalid"
-      (click)="applyFilter()">
+    <button mat-raised-button class="button-success"
+            [disabled]="filterForm.invalid"
+            (click)="applyFilter()">
       <mat-icon>check_circle</mat-icon>
       Valider
     </button>
 
-    <button
-      mat-raised-button
-      color="warn"
-      (click)="close.emit()">
+    <button mat-raised-button color="warn" (click)="close.emit()">
       <mat-icon>close</mat-icon>
       Fermer
     </button>
   </div>
-</div>
+
+</form>
