@@ -1,15 +1,15 @@
-<form class="filter-card" [formGroup]="filterForm">
+<div class="filter-card">
 
   <h2>Sélectionnez vos critères de filtrage</h2>
 
   <pnx-input
     label="Nom du filtre"
-    formControlName="name">
+    [parentFormControl]="filterForm.controls.name">
   </pnx-input>
 
   <pnx-select
     label="Champs à extraire"
-    formControlName="fields"
+    [parentFormControl]="filterForm.controls.fields"
     [options]="availableFields"
     [multiSelect]="true"
     [searchBar]="true">
@@ -19,13 +19,13 @@
     <pnx-input
       label="Date de début"
       type="date"
-      formControlName="startDate">
+      [parentFormControl]="filterForm.controls.startDate">
     </pnx-input>
 
     <pnx-input
       label="Date de fin"
       type="date"
-      formControlName="endDate">
+      [parentFormControl]="filterForm.controls.endDate">
     </pnx-input>
   </div>
 
@@ -41,10 +41,11 @@
       Valider
     </button>
 
-    <button mat-raised-button color="warn" (click)="close.emit()">
+    <button mat-raised-button color="warn"
+            (click)="close.emit()">
       <mat-icon>close</mat-icon>
       Fermer
     </button>
   </div>
 
-</form>
+</div>

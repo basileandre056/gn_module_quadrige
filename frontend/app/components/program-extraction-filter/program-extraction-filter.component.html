@@ -1,15 +1,15 @@
-<form class="filter-card" [formGroup]="filterForm">
+<div class="filter-card">
 
   <h2>Mettre à jour la liste des programmes</h2>
 
   <pnx-input
     label="Nom du filtre"
-    formControlName="name">
+    [parentFormControl]="filterForm.controls.name">
   </pnx-input>
 
   <pnx-select
     label="Lieu d’observation"
-    formControlName="monitoringLocation"
+    [parentFormControl]="filterForm.controls.monitoringLocation"
     [options]="sugested_locations"
     optionLabel="label"
     optionValue="code"
@@ -24,10 +24,11 @@
       Valider
     </button>
 
-    <button mat-raised-button color="warn" (click)="close.emit()">
+    <button mat-raised-button color="warn"
+            (click)="close.emit()">
       <mat-icon>close</mat-icon>
       Fermer
     </button>
   </div>
 
-</form>
+</div>
