@@ -6,13 +6,19 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+
+
+// ✅ À UTILISER
+import { MatLegacyDatepickerModule } from '@angular/material/legacy-datepicker';
+import { MatLegacyNativeDateModule } from '@angular/material/legacy-core';
+import { MatLegacyFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatLegacyInputModule } from '@angular/material/legacy-input';
+import { MatLegacyChipsModule } from '@angular/material/legacy-chips';
+import { MatLegacyAutocompleteModule } from '@angular/material/legacy-autocomplete';
+
+
 import { MatRippleModule } from '@angular/material/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
+
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -46,30 +52,32 @@ const routes: Routes = [
   ],
 
   imports: [
-    GN2CommonModule,
-    RouterModule.forChild(routes),
+  GN2CommonModule,
+  RouterModule.forChild(routes),
 
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    HttpClientModule,
+  CommonModule,
+  FormsModule,
+  ReactiveFormsModule,
+  HttpClientModule,
 
-    MatSortModule,
-    MatTooltipModule,
-    MatRippleModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatCheckboxModule,
-    MatCardModule,
-    MatChipsModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-  ],
+  MatSortModule,
+  MatTooltipModule,
+  MatRippleModule,
+  MatTableModule,
+  MatButtonModule,
+  MatIconModule,
+  MatProgressSpinnerModule,
+  MatCheckboxModule,
+  MatCardModule,
+
+  // ✅ MATERIAL LEGACY UNIQUEMENT
+  MatLegacyFormFieldModule,
+  MatLegacyInputModule,
+  MatLegacyAutocompleteModule,
+  MatLegacyChipsModule,
+  MatLegacyDatepickerModule,
+  MatLegacyNativeDateModule,
+],
 
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

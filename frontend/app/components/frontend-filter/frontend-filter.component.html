@@ -23,34 +23,38 @@
     <mat-label>Champs à extraire :</mat-label>
 
     <mat-form-field appearance="outline" class="w-100 mb-3">
-      <mat-chip-list #chipList aria-label="Liste des champs sélectionnés">
-  <mat-chip
-    *ngFor="let field of filterForm.value.fields"
-    [removable]="true"
-    (removed)="removeField(field)"
-  >
-    {{ field }}
-    <mat-icon matChipRemove>cancel</mat-icon>
-  </mat-chip>
-
-    <input
-      placeholder="Ajouter un champ"
-      [formControl]="fieldInputControl"
-      [matChipInputFor]="chipList"
-      [matAutocomplete]="auto"
-      [matChipInputAddOnBlur]="false"
-      [matChipInputSeparatorKeyCodes]="[]"
-    />
-
-</mat-chip-list>
-
-<mat-autocomplete #auto="matAutocomplete"
-    (optionSelected)="addField($event.option.value)">
-  <mat-option *ngFor="let field of remainingFields" [value]="field">
-    {{ field }}
-  </mat-option>
-</mat-autocomplete>
-
+      <mat-chip-list #chipList aria-label="Champs sélectionnés">
+        <mat-chip
+          *ngFor="let field of filterForm.controls.fields.value"
+          removable
+          (removed)="removeField(field)"
+        >
+          {{ field }}
+          <mat-icon matChipRemove>cancel</mat-icon>
+        </mat-chip>
+      
+        <input
+          matInput
+          placeholder="Ajouter un champ"
+          [formControl]="fieldInputControl"
+          [matAutocomplete]="auto"
+          [matChipInputFor]="chipList"
+          (blur)="fieldInputControl.setValue('')"
+        />
+      </mat-chip-list>
+    
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        autoActiveFirstOption
+        (optionSelected)="onFieldSelected($event.option.value)"
+      >
+        <mat-option
+          *ngFor="let field of remainingFields"
+          [value]="field"
+        >
+          {{ field }}
+        </mat-option>
+      </mat-autocomplete>
     </mat-form-field>
 
     <mat-error *ngIf="fieldsInvalid" class="error-msg">

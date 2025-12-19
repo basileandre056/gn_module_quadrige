@@ -53,6 +53,14 @@ export class FrontendFilterComponent implements OnInit {
     return this.availableFields.filter(f => !selected.includes(f));
   }
 
+  onFieldSelected(field: string): void {
+    this.addField(field);
+    
+    // 🔴 OBLIGATOIRE pour Material legacy
+    this.fieldInputControl.setValue('');
+    this.fieldInputControl.markAsTouched();
+  }
+
   isFormValid(): boolean {
     const { name, fields, startDate, endDate } = this.filterForm.value;
 
