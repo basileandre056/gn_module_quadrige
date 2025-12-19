@@ -20,37 +20,41 @@ export class FrontendFilterComponent implements OnInit {
 
   ngOnInit(): void {
     this.filterForm = this.fb.group({
-      name: ['', Validators.required],
-      fields: [[], Validators.required],
-      startDate: [null],
-      endDate: [null],
-    });
-
-    this.formsDefinition = [
-      {
-        attribut_name: 'name',
-        label: 'Nom du filtre',
-        type_widget: 'input',
-        required: true,
-      },
-      {
-        attribut_name: 'fields',
-        label: 'Champs à extraire',
-        type_widget: 'select',
-        multiple: true,
-        values: this.configService.config.extractable_fields,
-      },
-      {
-        attribut_name: 'startDate',
-        label: 'Date de début',
-        type_widget: 'date',
-      },
-      {
-        attribut_name: 'endDate',
-        label: 'Date de fin',
-        type_widget: 'date',
-      },
-    ];
+    name: ['', [Validators.required, Validators.minLength(3)]],
+    fields: [[], Validators.required],
+    startDate: [null],
+    endDate: [null],
+  });
+  
+  this.formsDefinition = [
+    {
+      attribut_name: 'name',
+      label: 'Nom du filtre',
+      type: 'input',
+      required: true,
+      validators: ['required', 'minLength:3'],
+    },
+    {
+      attribut_name: 'fields',
+      label: 'Champs à extraire',
+      type: 'select',
+      multiple: true,
+      values: this.configService.config.extractable_fields,
+      required: true,
+    },
+    {
+      attribut_name: 'startDate',
+      label: 'Date de début',
+      type: 'date',
+      readonly: true,
+    },
+    {
+      attribut_name: 'endDate',
+      label: 'Date de fin',
+      type: 'date',
+      readonly: true,
+    },
+  ];
   }
 
   applyFilter(): void {
