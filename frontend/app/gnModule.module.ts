@@ -26,6 +26,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
 import { MatSortModule } from '@angular/material/sort';
+import { MatOptionModule } from '@angular/material/core';
+
 
 import { GN2CommonModule } from '@geonature_common/GN2Common.module';
 
@@ -72,6 +74,7 @@ const routes: Routes = [
   MatSelectModule,
   MatFormFieldModule,
   MatInputModule,
+  MatOptionModule,
   
   MatDatepickerModule,
   MatNativeDateModule,
