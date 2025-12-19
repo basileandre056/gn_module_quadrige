@@ -5,8 +5,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
-import { MatTooltipModule } from '@angular/material/tooltip';
+
 import { MatChipsModule } from '@angular/material/chips';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatRippleModule } from '@angular/material/core';
@@ -58,6 +60,7 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     ReactiveFormsModule,
     HttpClientModule,
 
+    MatAutocompleteModule,
     MatSortModule,
     MatTooltipModule,
     MatRippleModule,
