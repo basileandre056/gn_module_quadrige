@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 // ✅ À UTILISER
@@ -15,6 +14,7 @@ import { MatLegacyFormFieldModule } from '@angular/material/legacy-form-field';
 import { MatLegacyInputModule } from '@angular/material/legacy-input';
 import { MatLegacyChipsModule } from '@angular/material/legacy-chips';
 import { MatLegacyAutocompleteModule } from '@angular/material/legacy-autocomplete';
+import { MatLegacyTooltipModule } from '@angular/material/legacy-tooltip';
 
 
 import { MatRippleModule } from '@angular/material/core';
@@ -61,7 +61,6 @@ const routes: Routes = [
   HttpClientModule,
 
   MatSortModule,
-  MatTooltipModule,
   MatRippleModule,
   MatTableModule,
   MatButtonModule,
@@ -71,6 +70,7 @@ const routes: Routes = [
   MatCardModule,
 
   // ✅ MATERIAL LEGACY UNIQUEMENT
+  MatLegacyTooltipModule,
   MatLegacyFormFieldModule,
   MatLegacyInputModule,
   MatLegacyAutocompleteModule,

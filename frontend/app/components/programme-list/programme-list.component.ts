@@ -59,12 +59,9 @@ export class ProgrammeListComponent implements OnInit {
 
 
   ngOnInit(): void {
-  this.locations = QUADRIGE_LOCATIONS;
-  this.initialiserProgrammes();
-
-
-  this.initialiserProgrammes();
-}
+    this.locations = QUADRIGE_LOCATIONS;
+    this.initialiserProgrammes();
+  }
 
 
 
