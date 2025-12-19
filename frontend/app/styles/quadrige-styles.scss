@@ -70,30 +70,10 @@ button[mat-raised-button] {
    ===================================================== */
 
 .filter-card {
-  position: absolute;
-  right: 20px;
-  top: 100px;
-  background: #fff;
-  padding: 2rem 2.5rem;
-  border-radius: 10px;
-  border: 1px solid #dcdcdc;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
-  width: 480px;
-  z-index: 2000;
-
-  animation: fadeIn 0.3s ease-in-out;
-
-  h2 {
-    margin: 0 0 1.5rem;
-    font-size: 1.4rem;
-    text-align: center;
-    color: #333;
-  }
-
-  mat-form-field {
-    width: 100%;
-    margin-bottom: 1rem;
-  }
+  position: fixed !important;
+  top: 120px !important;
+  right: 20px !important;
+  z-index: 99999 !important;
 }
 
 @keyframes fadeIn {

@@ -21,23 +21,22 @@ export class ProgramExtractionFilterComponent implements OnInit {
   constructor(private fb: FormBuilder) {}
 
   ngOnInit(): void {
-    // Récupération des lieux depuis la config
+    console.log('[ProgramExtractionFilter] ngOnInit');
     this.sugested_locations = QUADRIGE_LOCATIONS;
-
-
-    // Initialisation du formulaire
+    
     this.filterForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       monitoringLocation: new FormControl<string>('', Validators.required)
     });
-
+  
     const monitoringCtrl = this.filterForm.get('monitoringLocation') as FormControl<string>;
-
+  
     this.filteredLocations$ = monitoringCtrl.valueChanges.pipe(
       startWith(''),
       map((value: string) => this.filterLocations(value || ''))
     );
   }
+
 
   private filterLocations(value: string): any[] {
     const f = value.toLowerCase();

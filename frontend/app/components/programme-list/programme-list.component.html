@@ -69,12 +69,16 @@
     (close)="showDataFilter = false">
   </app-frontend-filter>
 
+  <div *ngIf="showProgramFilter" style="background: yellow; padding: 8px; z-index: 9999;">
+    DEBUG: showProgramFilter = TRUE
+  </div>
+  
   <app-program-extraction-filter
     *ngIf="showProgramFilter"
     (apply)="onProgramFilterApplied($event)"
     (close)="showProgramFilter = false">
   </app-program-extraction-filter>
-</div>
+
 
 
   <!-- 🪄 Message d’état -->
