@@ -8,7 +8,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
 import { MatRippleModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -72,7 +71,6 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     MatCardModule,
     MatChipsModule,
     MatDatepickerModule,
-    MatNativeDateModule,
   ],
 
   providers: [
