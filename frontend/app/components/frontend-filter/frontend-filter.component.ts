@@ -5,14 +5,13 @@ import { QuadrigeConfigService } from '../../services/quadrige-config.service';
 @Component({
   selector: 'app-frontend-filter',
   templateUrl: './frontend-filter.component.html',
-  styleUrls: ['./frontend-filter.component.scss']
 })
 export class FrontendFilterComponent implements OnInit {
   @Output() apply = new EventEmitter<any>();
   @Output() close = new EventEmitter<void>();
 
-  availableFields: string[] = [];
   filterForm!: FormGroup;
+  formsDefinition: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -20,40 +19,42 @@ export class FrontendFilterComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.availableFields = this.configService.config.extractable_fields;
-
     this.filterForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
+      name: ['', Validators.required],
       fields: [[], Validators.required],
       startDate: [null],
       endDate: [null],
     });
-  }
 
-  get dateRangeInvalid(): boolean {
-    const { startDate, endDate } = this.filterForm.value;
-    if (!startDate && !endDate) return false;
-    if (!startDate || !endDate) return true;
-    return startDate > endDate;
+    this.formsDefinition = [
+      {
+        attribut_name: 'name',
+        label: 'Nom du filtre',
+        type_widget: 'input',
+        required: true,
+      },
+      {
+        attribut_name: 'fields',
+        label: 'Champs à extraire',
+        type_widget: 'select',
+        multiple: true,
+        values: this.configService.config.extractable_fields,
+      },
+      {
+        attribut_name: 'startDate',
+        label: 'Date de début',
+        type_widget: 'date',
+      },
+      {
+        attribut_name: 'endDate',
+        label: 'Date de fin',
+        type_widget: 'date',
+      },
+    ];
   }
 
   applyFilter(): void {
-    if (this.filterForm.invalid || this.dateRangeInvalid) return;
-
-    const formatDate = (d: Date | null) =>
-      d
-        ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-            d.getDate()
-          ).padStart(2, '0')}`
-        : null;
-
-    const { name, fields, startDate, endDate } = this.filterForm.value;
-
-    this.apply.emit({
-      name,
-      fields,
-      startDate: formatDate(startDate),
-      endDate: formatDate(endDate),
-    });
+    if (this.filterForm.invalid) return;
+    this.apply.emit(this.filterForm.value);
   }
 }
