@@ -13,6 +13,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 
 
@@ -67,7 +68,7 @@ const routes: Routes = [
   MatProgressSpinnerModule,
   MatCheckboxModule,
   MatCardModule,
-
+  MatAutocompleteModule,
   MatSelectModule,
   MatFormFieldModule,
   MatInputModule,
