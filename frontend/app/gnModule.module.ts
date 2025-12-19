@@ -76,15 +76,7 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     MatDatepickerModule,
   ],
 
-  providers: [
-    QuadrigeConfigService,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: loadQuadrigeConfig,
-      deps: [QuadrigeConfigService],
-      multi: true,
-    },
-  ],
+  
 
   schemas: [
     //CUSTOM_ELEMENTS_SCHEMA
