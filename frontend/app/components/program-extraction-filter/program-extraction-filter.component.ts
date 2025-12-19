@@ -1,7 +1,5 @@
 import { Component, EventEmitter, Output, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
-import { Observable } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { QuadrigeConfigService } from '../../services/quadrige-config.service';
 
 @Component({
@@ -16,44 +14,22 @@ export class ProgramExtractionFilterComponent implements OnInit {
   filterForm!: FormGroup;
   sugested_locations: { code: string; label: string }[] = [];
 
-  filteredLocations$!: Observable<any[]>;
-
   constructor(
     private fb: FormBuilder,
     private configService: QuadrigeConfigService
   ) {}
 
   ngOnInit(): void {
-    // Récupération des lieux depuis la config
     this.sugested_locations = this.configService.config.locations;
 
-    // Initialisation du formulaire
     this.filterForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      monitoringLocation: new FormControl<string>('', Validators.required)
+      monitoringLocation: ['', Validators.required],
     });
-
-    const monitoringCtrl = this.filterForm.get('monitoringLocation') as FormControl<string>;
-
-    this.filteredLocations$ = monitoringCtrl.valueChanges.pipe(
-      startWith(''),
-      map((value: string) => this.filterLocations(value || ''))
-    );
-  }
-
-  private filterLocations(value: string): any[] {
-    const f = value.toLowerCase();
-    return this.sugested_locations.filter(loc =>
-      loc.label.toLowerCase().includes(f) || loc.code.toLowerCase().includes(f)
-    );
-  }
-
-  isFormValid(): boolean {
-    return this.filterForm.valid;
   }
 
   applyFilter(): void {
-    if (!this.isFormValid()) return;
+    if (this.filterForm.invalid) return;
     this.apply.emit(this.filterForm.value);
   }
 }

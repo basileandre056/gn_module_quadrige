@@ -1,95 +1,58 @@
-<div class="filter-card mat-elevation-z4" [formGroup]="filterForm">
+<div class="filter-card" [formGroup]="filterForm">
   <h2>Sélectionnez vos critères de filtrage</h2>
 
   <!-- 🧩 Nom du filtre -->
-  <mat-form-field appearance="outline" class="w-100 mb-3">
-    <mat-label>Nom du filtre</mat-label>
-    <input
-      matInput
-      formControlName="name"
-      placeholder="Nom du filtre"
-      (blur)="filterForm.get('name')?.markAsTouched()"
-    />
-    <mat-error *ngIf="filterForm.get('name')?.touched && filterForm.get('name')?.hasError('required')">
-      Le nom du filtre est requis.
-    </mat-error>
-    <mat-error *ngIf="filterForm.get('name')?.touched && filterForm.get('name')?.hasError('minlength')">
-      Le nom du filtre doit faire au moins 3 caractères.
-    </mat-error>
-  </mat-form-field>
+  <pnx-input
+    label="Nom du filtre"
+    placeholder="Nom du filtre"
+    [parentFormControl]="filterForm.controls.name">
+  </pnx-input>
 
   <!-- 📋 Champs à extraire -->
-  <div class="filter-field">
-    <mat-label>Champs à extraire :</mat-label>
+  <pnx-select
+    label="Champs à extraire"
+    [parentFormControl]="filterForm.controls.fields"
+    [options]="availableFields"
+    [multiSelect]="true"
+    [searchBar]="true">
+  </pnx-select>
 
-    <mat-form-field appearance="outline" class="w-100 mb-3">
-      <mat-chip-list #chipList aria-label="Liste des champs sélectionnés">
-  <mat-chip
-    *ngFor="let field of filterForm.value.fields"
-    [removable]="true"
-    (removed)="removeField(field)"
-  >
-    {{ field }}
-    <mat-icon matChipRemove>cancel</mat-icon>
-  </mat-chip>
+  <!-- 📆 Période -->
+  <div class="period-row">
+    <pnx-input
+      label="Date de début"
+      type="date"
+      [parentFormControl]="filterForm.controls.startDate">
+    </pnx-input>
 
-    <input
-      placeholder="Ajouter un champ"
-      [formControl]="fieldInputControl"
-      [matChipInputFor]="chipList"
-      [matAutocomplete]="auto"
-      [matChipInputAddOnBlur]="false"
-      [matChipInputSeparatorKeyCodes]="[]"
-    />
-
-</mat-chip-list>
-
-<mat-autocomplete #auto="matAutocomplete"
-    (optionSelected)="addField($event.option.value)">
-  <mat-option *ngFor="let field of remainingFields" [value]="field">
-    {{ field }}
-  </mat-option>
-</mat-autocomplete>
-
-    </mat-form-field>
-
-    <mat-error *ngIf="fieldsInvalid" class="error-msg">
-      Veuillez choisir au moins un champ à extraire.
-    </mat-error>
+    <pnx-input
+      label="Date de fin"
+      type="date"
+      [parentFormControl]="filterForm.controls.endDate">
+    </pnx-input>
   </div>
 
-  <!-- 📆 Période (optionnelle) -->
-  <div class="filter-field">
-    <mat-label>Période (optionnelle)</mat-label>
-    <div class="period-row">
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Date de début</mat-label>
-        <input matInput [matDatepicker]="pickerStart" formControlName="startDate" />
-        <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
-        <mat-datepicker #pickerStart></mat-datepicker>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Date de fin</mat-label>
-        <input matInput [matDatepicker]="pickerEnd" formControlName="endDate" />
-        <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
-        <mat-datepicker #pickerEnd></mat-datepicker>
-      </mat-form-field>
-    </div>
-
-    <mat-error *ngIf="dateRangeInvalid" class="error-msg">
-      Entrez une période valide
-    </mat-error>
+  <div *ngIf="dateRangeInvalid" class="error-msg">
+    Entrez une période valide
   </div>
 
   <!-- ✅ Actions -->
   <div class="filter-actions">
-    <button mat-raised-button class="button-success" [disabled]="!isFormValid()" (click)="applyFilter()">
-      <mat-icon>check_circle</mat-icon> Valider
+    <button
+      mat-raised-button
+      class="button-success"
+      [disabled]="filterForm.invalid || dateRangeInvalid"
+      (click)="applyFilter()">
+      <mat-icon>check_circle</mat-icon>
+      Valider
     </button>
 
-    <button mat-raised-button color="warn" (click)="close.emit()">
-      <mat-icon>close</mat-icon> Fermer
+    <button
+      mat-raised-button
+      color="warn"
+      (click)="close.emit()">
+      <mat-icon>close</mat-icon>
+      Fermer
     </button>
   </div>
 </div>
