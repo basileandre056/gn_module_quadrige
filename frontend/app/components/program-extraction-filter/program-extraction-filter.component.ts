@@ -1,3 +1,7 @@
+import { Component, EventEmitter, Output, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { QuadrigeConfigService } from '../../services/quadrige-config.service';
+
 @Component({
   selector: 'app-program-extraction-filter',
   templateUrl: './program-extraction-filter.component.html',
