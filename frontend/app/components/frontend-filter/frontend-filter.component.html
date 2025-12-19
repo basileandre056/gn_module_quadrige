@@ -22,45 +22,20 @@
   <div class="filter-field">
     <mat-label>Champs à extraire :</mat-label>
 
-    <mat-form-field appearance="outline" class="w-100 mb-3">
-      <mat-chip-list #chipList aria-label="Champs sélectionnés">
-        <mat-chip
-          *ngFor="let field of filterForm.controls.fields.value"
-          removable
-          (removed)="removeField(field)"
-        >
-          {{ field }}
-          <mat-icon matChipRemove>cancel</mat-icon>
-        </mat-chip>
-      
-        <input
-          matInput
-          placeholder="Ajouter un champ"
-          [formControl]="fieldInputControl"
-          [matAutocomplete]="auto"
-          [matChipInputFor]="chipList"
-          (blur)="fieldInputControl.setValue('')"
-        />
-      </mat-chip-list>
-    
-      <mat-autocomplete
-        #auto="matAutocomplete"
-        autoActiveFirstOption
-        (optionSelected)="onFieldSelected($event.option.value)"
-      >
-        <mat-option
-          *ngFor="let field of remainingFields"
-          [value]="field"
-        >
-          {{ field }}
-        </mat-option>
-      </mat-autocomplete>
-    </mat-form-field>
+    <!-- 📋 Champs à extraire -->
+<mat-form-field appearance="outline" class="w-100 mb-3">
+  <mat-label>Champs à extraire</mat-label>
 
-    <mat-error *ngIf="fieldsInvalid" class="error-msg">
-      Veuillez choisir au moins un champ à extraire.
-    </mat-error>
-  </div>
+  <mat-select formControlName="fields" multiple>
+    <mat-option *ngFor="let field of availableFields" [value]="field">
+      {{ field }}
+    </mat-option>
+  </mat-select>
+
+  <mat-error *ngIf="fieldsInvalid" class="error-msg">
+    Veuillez choisir au moins un champ à extraire.
+  </mat-error>
+</mat-form-field>
 
   <!-- 📆 Période (optionnelle) -->
   <div class="filter-field">

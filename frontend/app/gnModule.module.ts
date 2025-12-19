@@ -4,17 +4,16 @@ import { RouterModule, Routes } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { MatSelectModule } from '@angular/material/select';
 
 
 
 // ✅ À UTILISER
-import { MatLegacyDatepickerModule } from '@angular/material/legacy-datepicker';
-import { MatLegacyNativeDateModule } from '@angular/material/legacy-core';
-import { MatLegacyFormFieldModule } from '@angular/material/legacy-form-field';
-import { MatLegacyInputModule } from '@angular/material/legacy-input';
-import { MatLegacyChipsModule } from '@angular/material/legacy-chips';
-import { MatLegacyAutocompleteModule } from '@angular/material/legacy-autocomplete';
-import { MatLegacyTooltipModule } from '@angular/material/legacy-tooltip';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+
 
 
 import { MatRippleModule } from '@angular/material/core';
@@ -69,14 +68,13 @@ const routes: Routes = [
   MatCheckboxModule,
   MatCardModule,
 
-  // ✅ MATERIAL LEGACY UNIQUEMENT
-  MatLegacyTooltipModule,
-  MatLegacyFormFieldModule,
-  MatLegacyInputModule,
-  MatLegacyAutocompleteModule,
-  MatLegacyChipsModule,
-  MatLegacyDatepickerModule,
-  MatLegacyNativeDateModule,
+  MatSelectModule,
+  MatFormFieldModule,
+  MatInputModule,
+  
+  MatDatepickerModule,
+  MatNativeDateModule,
+  
 ],
 
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
