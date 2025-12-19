@@ -5,6 +5,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
+
+
+
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -83,6 +86,8 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     },
   ],
 
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [
+    //CUSTOM_ELEMENTS_SCHEMA
+    ]
 })
 export class GeonatureModule  {}
