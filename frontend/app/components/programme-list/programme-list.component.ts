@@ -7,7 +7,8 @@ import { Programme } from '../models/programmes';
 import { ExtractedLink } from '../models/extractedLinks';
 import { ExtractionResponse } from '../models/extraction-response';
 import { ProgramExtractionResponse } from '../models/program-extraction-response';
-import { QuadrigeConfigService, QuadrigeConfig } from '../../services/quadrige-config.service';
+import { QUADRIGE_LOCATIONS } from '../../constants/quadrige_constants';
+
 
 
 // 🔹 Interface manquante — nécessaire pour éviter les erreurs TS
@@ -26,8 +27,7 @@ interface LastProgrammesResponse {
 })
 export class ProgrammeListComponent implements OnInit {
 
-config!: QuadrigeConfig;
-locations: {code: string; label: string}[] = [];
+
 
 
   programmes: Programme[] = [];
@@ -52,23 +52,16 @@ locations: {code: string; label: string}[] = [];
   private API = '/geonature/api/quadrige';
 
 
-  private locationLabels = [
-    { code: '126-', label: 'Réunion' },
-    { code: '145-', label: 'Mayotte' },
-    { code: '048-', label: 'Maurice' },
-    { code: '153-', label: 'Île Tromelin' },
-    { code: '152-', label: 'Îles Glorieuses' },
-    { code: '154-', label: 'Île Juan de Nova' },
-    { code: '155-', label: 'Île Bassas da India' },
-    { code: '156-', label: 'Île Europa' },
-  ];
 
-  constructor(private http: HttpClient, private configService: QuadrigeConfigService) {}
+  locations = [];
+
+  constructor(private http: HttpClient) {}
+
 
   ngOnInit(): void {
-  // La config est déjà chargée par APP_INITIALIZER
-  this.config = this.configService.config;
-  this.locations = this.config.locations;
+  this.locations = QUADRIGE_LOCATIONS;
+  this.initialiserProgrammes();
+
 
   this.initialiserProgrammes();
 }

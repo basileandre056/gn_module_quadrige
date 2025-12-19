@@ -23,7 +23,6 @@ import { MatSortModule } from '@angular/material/sort';
 
 import { GN2CommonModule } from '@geonature_common/GN2Common.module';
 
-import { QuadrigeConfigService } from './services/quadrige-config.service';
 
 // Components
 import { ProgrammeListComponent } from './components/programme-list/programme-list.component';
@@ -37,9 +36,6 @@ const routes: Routes = [
   { path: '**', redirectTo: '' }
 ];
 
-export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
-  return () => configService.loadConfig();
-}
 
 @NgModule({
   declarations: [
@@ -73,16 +69,6 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     MatChipsModule,
     MatDatepickerModule,
     MatNativeDateModule,
-  ],
-
-  providers: [
-    QuadrigeConfigService,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: loadQuadrigeConfig,
-      deps: [QuadrigeConfigService],
-      multi: true,
-    },
   ],
 
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

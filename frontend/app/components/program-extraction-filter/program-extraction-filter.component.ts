@@ -2,7 +2,7 @@ import { Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
-import { QuadrigeConfigService } from '../../services/quadrige-config.service';
+import { QUADRIGE_LOCATIONS } from '../../constants/quadrige_constants';
 
 @Component({
   selector: 'app-program-extraction-filter',
@@ -18,14 +18,12 @@ export class ProgramExtractionFilterComponent implements OnInit {
 
   filteredLocations$!: Observable<any[]>;
 
-  constructor(
-    private fb: FormBuilder,
-    private configService: QuadrigeConfigService
-  ) {}
+  constructor(private fb: FormBuilder) {}
 
   ngOnInit(): void {
     // Récupération des lieux depuis la config
-    this.sugested_locations = this.configService.config.locations;
+    this.sugested_locations = QUADRIGE_LOCATIONS;
+
 
     // Initialisation du formulaire
     this.filterForm = this.fb.group({

@@ -5,7 +5,9 @@ import {
   FormControl,
   Validators
 } from '@angular/forms';
-import { QuadrigeConfigService } from '../../services/quadrige-config.service';
+import { QUADRIGE_EXTRACTABLE_FIELDS } from '../../constants/quadrige_constants';
+
+
 
 @Component({
   selector: 'app-frontend-filter',
@@ -26,14 +28,12 @@ export class FrontendFilterComponent implements OnInit {
     endDate: FormControl<Date | null>;
   }>;
 
-  constructor(
-    private fb: FormBuilder,
-    private configService: QuadrigeConfigService
-  ) {}
+  constructor(private fb: FormBuilder) {}
+
 
   ngOnInit(): void {
     // Champs dynamiques depuis la config TOML
-    this.availableFields = this.configService.config.extractable_fields;
+    this.availableFields = QUADRIGE_EXTRACTABLE_FIELDS;
 
     this.filterForm = this.fb.nonNullable.group({
       name: this.fb.nonNullable.control('', [Validators.required, Validators.minLength(3)]),
