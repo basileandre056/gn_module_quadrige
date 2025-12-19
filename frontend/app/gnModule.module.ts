@@ -60,6 +60,7 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
+    
     PnxDynamicFormModule,
     MatSortModule,
     MatTooltipModule,

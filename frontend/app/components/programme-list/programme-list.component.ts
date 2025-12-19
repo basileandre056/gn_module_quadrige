@@ -49,6 +49,9 @@ locations: {code: string; label: string}[] = [];
   monitoringLocation: string = '';
   monitoringLabel: string = '';
 
+  configReady = false;
+
+
   private API = '/geonature/api/quadrige';
 
 
@@ -66,12 +69,16 @@ locations: {code: string; label: string}[] = [];
   constructor(private http: HttpClient, private configService: QuadrigeConfigService) {}
 
   ngOnInit(): void {
-  // La config est déjà chargée par APP_INITIALIZER
-  this.config = this.configService.config;
-  this.locations = this.config.locations;
+    this.config = this.configService.config;
+    this.locations = this.config.locations;
+    
+    this.configReady =
+      this.locations.length > 0 ||
+      this.config.extractable_fields.length > 0;
+    
+    this.initialiserProgrammes();
+  }
 
-  this.initialiserProgrammes();
-}
 
 
 

@@ -64,13 +64,13 @@
 
   <!-- 🌐 Filtres -->
   <app-frontend-filter
-    *ngIf="showDataFilter"
+    *ngIf="showDataFilter && configReady"
     (apply)="onDataFilterApplied($event)"
     (close)="showDataFilter = false">
   </app-frontend-filter>
 
   <app-program-extraction-filter
-    *ngIf="showProgramFilter"
+    *ngIf="showProgramFilter && configReady"
     (apply)="onProgramFilterApplied($event)"
     (close)="showProgramFilter = false">
   </app-program-extraction-filter>
