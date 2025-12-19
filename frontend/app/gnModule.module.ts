@@ -7,7 +7,6 @@ import { HttpClientModule } from '@angular/common/http';
 
 
 
-import { PnxDynamicFormModule } from '@geonature_common/form/dynamic-form/dynamic-form.module';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
@@ -61,7 +60,6 @@ export function loadQuadrigeConfig(configService: QuadrigeConfigService) {
     ReactiveFormsModule,
     HttpClientModule,
     
-    PnxDynamicFormModule,
     MatSortModule,
     MatTooltipModule,
     MatRippleModule,
