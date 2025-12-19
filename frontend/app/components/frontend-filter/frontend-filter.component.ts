@@ -25,7 +25,7 @@ export class FrontendFilterComponent implements OnInit {
     startDate: [null],
     endDate: [null],
   });
-  
+
   this.formsDefinition = [
     {
       attribut_name: 'name',
@@ -40,6 +40,7 @@ export class FrontendFilterComponent implements OnInit {
       type: 'select',
       multiple: true,
       values: this.configService.config.extractable_fields,
+      simple_values: true, 
       required: true,
     },
     {

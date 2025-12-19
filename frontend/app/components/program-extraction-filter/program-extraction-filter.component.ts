@@ -42,6 +42,7 @@ export class ProgramExtractionFilterComponent implements OnInit {
       required: true,
     },
   ];
+
 }
 
   applyFilter(): void {
