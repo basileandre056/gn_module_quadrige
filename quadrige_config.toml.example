@@ -9,7 +9,7 @@ PERMISSION_LEVEL = { module = "QUADRIGE_MODULES" }
 
 # -------- CONFIG BACKEND -------
 graphql_url = "https://quadrige-core.ifremer.fr/graphql/public"
-access_token="2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:96A2A2AEDE6115BE9C462247461D26B317CD1602D73AE47408EDA70A04DCF21A:1|mhQMC3j5nad54G615G7NotJILcTeQv9KKbr8Fj+pn6Sk2T+pY3xIdNikUzIuJ3T43FeNKBYAlKnQNWpvhdKWBg=="
+access_token="2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:C6D727BC98FB74A4A225C98182BAE7C406C74E97876459AFADF99E567691EAB0:1|dcxfotZ5VQ7tgD9sepLOUqFOG1GuSsJjl2yAQ319tpn9fXw1OnLUqx3pPMp5RrhjT3sSI/NZThUZGVvKUnicAQ=="
 # Lieux Ifremer
 locations = [
   { code = "126-", label = "Réunion" },

@@ -90,7 +90,7 @@ def extract_programs(filter_data: dict):
             )
 
         elif status in ["PENDING", "RUNNING"]:
-            time.sleep(10)
+            time.sleep(2)
 
         else:
             raise RuntimeError(f"Tâche en erreur : {extraction.get('error')}")
