@@ -71,6 +71,16 @@ def create_programs_dir(monitoring_location: str) -> Tuple[str, str]:
     dirname = f"programmes_{ml}_{ts}"
     path = os.path.join(PROGRAMS_DIR, dirname)
     os.makedirs(path, exist_ok=True)
+
+    # lors de la création du dossier programmes
+    meta = {
+        "monitoringLocation": monitoring_location,
+        "timestamp": ts,
+    }
+    with open(os.path.join(path, "meta.json"), "w", encoding="utf-8") as f:
+
+        json.dump(meta, f)
+
     return dirname, path
 
 

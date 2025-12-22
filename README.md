@@ -237,38 +237,13 @@ Le frontend du module Quadrige doit s’afficher (liste des programmes, filtres,
 
 ## 🟦 10. Tests des extractions Quadrige
 
-### 10.1 Extraction d’un programme (exemple)
-
-```bash
-curl -X POST http://localhost/api/quadrige/data-extractions   -H "Content-Type: application/json"   -d '{
-        "programmes": [
-          "ORC_MAYOTTE_BELT_POISSONS"
-        ],
-        "filter": {
-          "name": "test_deploy",
-          "fields": ["MONITORING_LOCATION_NAME"]
-        }
-      }'
-```
-
-### 10.2 Extraction de plusieurs programmes
-
-```bash
-curl -X POST http://localhost/api/quadrige/data-extractions   -H "Content-Type: application/json"   -d '{
-        "programmes": [
-          "ORC_MAYOTTE_BELT_POISSONS",
-          "ORC_MAYOTTE_LIT_BENTHOS",
-          "EI_MAYOTTE_BLANCHISSEMENT_PCS_BENTHOS"
-        ],
-        "filter": {
-          "name": "test_multiple",
-          "fields": ["MONITORING_LOCATION_NAME"]
-        }
-      }'
-```
-
-Résultat attendu :
-- Plusieurs ZIP générés et sauvegardés,
-- Si 1 programme échoue → les autres continuent,
-- Aucun crash du backend.
-
+/tmp/quadrige_module/
+├── programs/
+│   ├── programmes_145-_20250414-103012/
+│   ├── programmes_126-_20250414-114455/
+│   └── programmes_048-_20250414-120102/
+│
+├── output_data/
+│   ├── 8b7b3c0e-...
+│   ├── 2e9a1a1f-...
+│   └── a44c9c5d-...

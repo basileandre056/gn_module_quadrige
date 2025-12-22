@@ -86,10 +86,14 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
         local_path = os.path.join(output_dir, filename)
 
         try:
-            r = requests.get(file_url, timeout=120)
+            r = requests.get(file_url, timeout=120, stream=True)
             r.raise_for_status()
+            
             with open(local_path, "wb") as f:
-                f.write(r.content)
+                for chunk in r.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+
         except Exception as e:
             current_app.logger.warning(f"   ⚠️ Erreur téléchargement {prog} : {e}")
             continue
