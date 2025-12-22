@@ -1,253 +1,185 @@
 # backend/gn_module_quadrige/routes.py
 import os
-import requests  #  AJOUT OBLIGATOIRE
-from flask import request, jsonify, send_from_directory
+import datetime
+import requests
+from flask import request, jsonify, send_from_directory, abort
 
 from .extraction_data import extract_ifremer_data
 from .extraction_programs import extract_programs
-
-
 from . import utils_backend
 
 
 def init_routes(bp):
-    """
-    Enregistre toutes les routes sur le blueprint passé en argument.
-    """
 
-    # -------------------------
-    # 1) Extraction + filtrage programmes
-    # -------------------------
     @bp.route("/program-extraction", methods=["POST"])
     def recevoir_program_extraction():
         data = request.json or {}
         program_filter = data.get("filter", {})
         monitoring_location = program_filter.get("monitoringLocation", "")
 
-        print("\n[QUADRIGE BACKEND] ➡️ /program-extraction")
-        print("[QUADRIGE BACKEND] Filtre reçu :", program_filter)
+        if not monitoring_location:
+            return jsonify({"status": "error", "message": "monitoringLocation manquante"}), 400
 
         try:
             file_url = extract_programs(program_filter)
-            print(f"[QUADRIGE BACKEND] URL CSV reçue : {file_url}")
 
+            # save last filter (pour data-extractions)
             utils_backend.sauvegarder_filtre(program_filter)
 
-            utils_backend.nettoyer_dossier_memory()
+            # 1 dossier par extraction programmes
+            dirname, prog_dir = utils_backend.create_programs_dir(monitoring_location)
+            utils_backend.cleanup_old_dirs(utils_backend.PROGRAMS_DIR, keep=3)
 
-            brut_path = os.path.join(
-                utils_backend.MEMORY_DIR,
-                f"programmes_{monitoring_location}_brut.csv"
-            )
-            r = requests.get(file_url)
+            ts = dirname.split("_")[-1]  # programmes_<ml>_<ts>
+
+            safe_ml = utils_backend.safe_slug(monitoring_location)
+            brut_filename = f"programmes_{safe_ml}_{ts}_brut.csv"
+            filtered_filename = f"programmes_{safe_ml}_{ts}_filtered.csv"
+
+            brut_path = os.path.join(prog_dir, brut_filename)
+            filtered_path = os.path.join(prog_dir, filtered_filename)
+
+            r = requests.get(file_url, timeout=120)
             r.raise_for_status()
-
             with open(brut_path, "wb") as f:
                 f.write(r.content)
 
-            print(f"[QUADRIGE BACKEND] CSV brut sauvegardé : {brut_path}")
+            utils_backend.nettoyer_csv(brut_path, filtered_path, monitoring_location)
+            programmes_json = utils_backend.csv_to_programmes_json(filtered_path)
 
-            filtre_path = os.path.join(
-                utils_backend.MEMORY_DIR,
-                f"programmes_{monitoring_location}_filtered.csv"
-            )
-
-            utils_backend.nettoyer_csv(brut_path, filtre_path, monitoring_location)
-
-            programmes_json = utils_backend.csv_to_programmes_json(filtre_path)
-
-
-        except Exception as e:
-            return jsonify({"status": "error", "message": str(e)}), 500
-
-        base_url = "/quadrige/memory"
-
-        return jsonify({
-            "status": "ok",
-            "fichiers_csv": [
-                {
-                    "file_name": f"programmes_{monitoring_location}_brut.csv",
-                    "url": f"{base_url}/programmes_{monitoring_location}_brut.csv",
-                },
-                {
-                    "file_name": f"programmes_{monitoring_location}_filtered.csv",
-                    "url": f"{base_url}/programmes_{monitoring_location}_filtered.csv",
-                },
-            ],
-            "programmes": programmes_json,
-        }), 200
-
-    # -------------------------
-    # 2) Relancer uniquement le filtrage
-    # -------------------------
-    @bp.route("/filtrage_seul", methods=["POST", "GET"])
-    def relancer_filtrage():
-        if request.method == "POST":
-            data = request.json or {}
-            program_filter = data.get("filter", {})
-        else:
-            program_filter = {}
-
-        if not program_filter:
-            program_filter = utils_backend.charger_filtre()
-
-        monitoring_location = program_filter.get("monitoringLocation", "")
-
-        if not monitoring_location:
+            base_url = "/quadrige/programs"
             return jsonify({
-                "status": "empty",
-                "message": "Aucun filtre encore défini.",
-                "fichiers_csv": [],
-                "programmes": [],
+                "status": "ok",
+                "fichiers_csv": [
+                    {"file_name": brut_filename, "url": f"{base_url}/{dirname}/{brut_filename}"},
+                    {"file_name": filtered_filename, "url": f"{base_url}/{dirname}/{filtered_filename}"},
+                ],
+                "programmes": programmes_json,
             }), 200
 
-
-        try:
-            brut_path = os.path.join(
-                utils_backend.MEMORY_DIR,
-                f"programmes_{monitoring_location}_brut.csv"
-            )
-            filtre_path = os.path.join(
-                utils_backend.MEMORY_DIR,
-                f"programmes_{monitoring_location}_filtered.csv"
-            )
-
-            if not os.path.exists(brut_path):
-                return jsonify({
-                    "status": "ok",
-                    "fichiers_csv": [],
-                    "programmes": [],
-                    "message": "⚠️ Aucun CSV brut trouvé pour ce filtre.",
-                }), 200
-
-            utils_backend.nettoyer_csv(brut_path, filtre_path, monitoring_location)
-            programmes_json = utils_backend.csv_to_programmes_json(filtre_path)
-
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 500
 
-        return jsonify({
-            "status": "ok",
-            "fichiers_csv": [
-                {
-                    "file_name": f"programmes_{monitoring_location}_filtered.csv",
-                    "url": f"/quadrige/memory/programmes_{monitoring_location}_filtered.csv",
-                }
-            ],
-            "programmes": programmes_json,
-            "message": "Filtrage relancé avec succès",
-        }), 200
-
-    # -------------------------
-    # 3) Extraction des données (ZIP)
-    # -------------------------
     @bp.route("/data-extractions", methods=["POST"])
     def recevoir_data_extractions():
         data = request.json or {}
         programmes = data.get("programmes", [])
         filter_data_front = data.get("filter", {})
 
-        print("[QUADRIGE BACKEND] ➡️ /data-extractions")
-
         if not programmes:
-            return jsonify({
-                "status": "warning",
-                "type": "validation",
-                "message": "Aucun programme reçu par le backend",
-            }), 400
+            return jsonify({"status": "warning", "message": "Aucun programme reçu"}), 400
 
         last_filter = utils_backend.charger_filtre()
         monitoring_location = last_filter.get("monitoringLocation", "")
-
         if not monitoring_location:
-            return jsonify({
-                "status": "error",
-                "message": "Aucune monitoringLocation trouvée dans le dernier filtre.",
-            }), 400
+            return jsonify({"status": "error", "message": "Aucune monitoringLocation sauvegardée"}), 400
 
+        # filtre final (force monitoringLocation)
         filter_data = dict(filter_data_front)
         filter_data["monitoringLocation"] = monitoring_location
 
+        # 1 dossier par extraction data
+        extraction_id, extraction_dir = utils_backend.create_extraction_dir()
+        utils_backend.cleanup_old_dirs(utils_backend.OUTPUT_DATA_DIR, keep=3)
+
+        ts = utils_backend.now_ts()
+
         try:
-            utils_backend.nettoyer_output_data()
-
-            download_links = extract_ifremer_data(programmes, filter_data)
-
+            files = extract_ifremer_data(
+                programmes=programmes,
+                filter_data=filter_data,
+                output_dir=extraction_dir,
+                monitoring_location=monitoring_location,
+                ts=ts,
+            )
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 500
 
-        if not download_links:
-            return jsonify({
-                "status": "warning",
-                "type": "not_found",
-                "message": "Les programmes sélectionnés ne correspondent pas au filtre",
-            }), 404
+        if not files:
+            return jsonify({"status": "warning", "message": "Aucun fichier généré"}), 404
 
-        renamed_files = utils_backend.name_extraction_data(
-            programmes, download_links, filter_data, monitoring_location
-        )
+        # compléter les URLs maintenant qu'on a extraction_id
+        base_url = "/quadrige/output_data"
+        for f in files:
+            f["url"] = f"{base_url}/{extraction_id}/{f['file_name']}"
 
         return jsonify({
             "status": "ok",
             "programmes_recus": programmes,
             "filtre_utilise": filter_data,
-            "fichiers_zip": renamed_files,
+            "fichiers_zip": files,
         }), 200
 
-    # -------------------------
-    # 4) Servir les fichiers sauvegardés
-    # -------------------------
-    @bp.route("/memory/<path:filename>", methods=["GET"])
-    def download_memory_file(filename):
-        return send_from_directory(utils_backend.MEMORY_DIR, filename)
+    # ✅ téléchargement direct (attachment)
+    @bp.route("/programs/<path:subpath>", methods=["GET"])
+    def download_programs_file(subpath):
+        # subpath = "<dirname>/<filename>"
+        full_path = os.path.join(utils_backend.PROGRAMS_DIR, subpath)
+        if not os.path.isfile(full_path):
+            abort(404)
+        directory = os.path.dirname(full_path)
+        filename = os.path.basename(full_path)
+        return send_from_directory(directory, filename, as_attachment=True)
 
-    @bp.route("/output_data/<path:filename>", methods=["GET"])
-    def download_output_data(filename):
-        return send_from_directory(utils_backend.OUTPUT_DATA_DIR, filename)
+    @bp.route("/output_data/<path:subpath>", methods=["GET"])
+    def download_output_data(subpath):
+        # subpath = "<extraction_id>/<filename>"
+        full_path = os.path.join(utils_backend.OUTPUT_DATA_DIR, subpath)
+        if not os.path.isfile(full_path):
+            abort(404)
+        directory = os.path.dirname(full_path)
+        filename = os.path.basename(full_path)
+        return send_from_directory(directory, filename, as_attachment=True)
 
-    # -------------------------
-    # 5) Récupérer les programmes
-    # -------------------------
     @bp.route("/last-programmes", methods=["GET"])
     def get_last_programmes():
-        last_filter = utils_backend.charger_filtre()
-        monitoring_location = last_filter.get("monitoringLocation", "")
-        base_url = "/quadrige/memory"
-
-        filtre_path = os.path.join(
-            utils_backend.MEMORY_DIR,
-            f"programmes_{monitoring_location}_filtered.csv",
+        base_dir = utils_backend.PROGRAMS_DIR
+    
+        if not os.path.exists(base_dir):
+            return jsonify({"status": "empty"}), 200
+    
+        # dossiers triés par date (desc)
+        dirs = sorted(
+            [d for d in os.listdir(base_dir) if os.path.isdir(os.path.join(base_dir, d))],
+            reverse=True,
         )
-        brut_path = os.path.join(
-            utils_backend.MEMORY_DIR,
-            f"programmes_{monitoring_location}_brut.csv",
-        )
-
-        programmes = utils_backend.csv_to_programmes_json(filtre_path) if os.path.exists(filtre_path) else []
-
+    
+        if not dirs:
+            return jsonify({"status": "empty"}), 200
+    
+        last_dir = dirs[0]
+        last_dir_path = os.path.join(base_dir, last_dir)
+    
         fichiers_csv = []
-        if os.path.exists(brut_path):
-            fichiers_csv.append({
-                "file_name": os.path.basename(brut_path),
-                "url": f"{base_url}/{os.path.basename(brut_path)}",
-            })
-        if os.path.exists(filtre_path):
-            fichiers_csv.append({
-                "file_name": os.path.basename(filtre_path),
-                "url": f"{base_url}/{os.path.basename(filtre_path)}",
-            })
-
+        filtered_csv = None
+    
+        for f in os.listdir(last_dir_path):
+            if f.endswith(".csv"):
+                fichiers_csv.append({
+                    "file_name": f,
+                    "url": f"/quadrige/programs/{last_dir}/{f}",
+                })
+                if "filtered" in f:
+                    filtered_csv = os.path.join(last_dir_path, f)
+    
+        programmes = (
+            utils_backend.csv_to_programmes_json(filtered_csv)
+            if filtered_csv and os.path.exists(filtered_csv)
+            else []
+        )
+    
+        # monitoringLocation déduite du nom du dossier
+        # programmes_<location>_<timestamp>
+        parts = last_dir.split("_")
+        monitoring_location = parts[1] if len(parts) >= 3 else None
+    
         return jsonify({
-                "status": "ok" if programmes else "empty",
-                "message": (
-                    f"{len(programmes)} programmes trouvés"
-                    if programmes else
-                    "Aucun programme sauvegardé"
-                ),
-                "programmes": programmes,
-                "monitoringLocation": monitoring_location or None,
-                "fichiers_csv": fichiers_csv,
-            }), 200
+            "status": "ok" if programmes else "empty",
+            "monitoringLocation": monitoring_location,
+            "programmes": programmes,
+            "fichiers_csv": fichiers_csv,
+        }), 200
+
 
 
 

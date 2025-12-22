@@ -1,5 +1,4 @@
 # backend/gn_module_quadrige/extraction_data.py
-
 import os
 import time
 import requests
@@ -8,21 +7,23 @@ from flask import current_app
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 
-from .utils_backend import OUTPUT_DATA_DIR
 from .build_query import build_extraction_query
+from . import utils_backend
 
 
-def extract_ifremer_data(programmes, filter_data):
+def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_location, ts):
     """
     Lance les extractions de résultats pour chaque programme et renvoie
-    la liste des URLs de fichiers ZIP fournis par Ifremer.
+    une liste de fichiers ZIP (déjà téléchargés et renommés) :
+    [
+      {"file_name": "...zip", "url": "/quadrige/output_data/<extraction_id>/<file>.zip"},
+      ...
+    ]
     """
+    os.makedirs(output_dir, exist_ok=True)
 
-    # 🔥 Lecture de la configuration TOML du module
-    # 🔥 Lecture de la configuration TOML du module (import LAZY pour éviter la boucle)
     from geonature.utils.config import config as gn_config
     cfg = gn_config["QUADRIGE"]
-
     graphql_url = cfg["graphql_url"]
     access_token = cfg["access_token"]
 
@@ -33,80 +34,70 @@ def extract_ifremer_data(programmes, filter_data):
     )
     client = Client(transport=transport, fetch_schema_from_transport=False)
 
-    download_links = []
-    os.makedirs(OUTPUT_DATA_DIR, exist_ok=True)
+    results = []
 
-    for p in programmes:
-        current_app.logger.info(f"[extract_ifremer_data] Programme : {p}")
+    status_query = gql("""
+        query getStatus($id: Int!) {
+            getExtraction(id: $id) {
+                status
+                fileUrl
+                error
+            }
+        }
+    """)
 
-        # 1) Lancer la tâche d’extraction
+    for prog in programmes:
+        current_app.logger.info(f"[extract_ifremer_data] Programme : {prog}")
+
+        # 1) Lancer la tâche
         try:
-            execute_query = build_extraction_query(p, filter_data)
+            execute_query = build_extraction_query(prog, filter_data)
             response = client.execute(execute_query)
-
             task_id = response["executeResultExtraction"]["id"]
-            current_app.logger.info(f"   Extraction lancée (id: {task_id})")
-
         except Exception as e:
-            current_app.logger.error(f"   ❌ Erreur lors de l'extraction {p} : {e}")
+            current_app.logger.error(f"   ❌ Erreur lancement extraction {prog} : {e}")
             continue
 
-        # 2) Suivi du statut
-        status_query = gql("""
-            query getStatus($id: Int!) {
-                getExtraction(id: $id) {
-                    status
-                    fileUrl
-                    error
-                }
-            }
-        """)
-
+        # 2) Polling
         file_url = None
+        MAX_WAIT = 300
+        start = time.time()
+
         while file_url is None:
-            status_response = client.execute(
-                status_query, variable_values={"id": task_id}
-            )
+            if time.time() - start > MAX_WAIT:
+                raise TimeoutError(f"Extraction Ifremer trop longue (programme {prog})")
+
+            status_response = client.execute(status_query, variable_values={"id": task_id})
             extraction = status_response["getExtraction"]
             status = extraction["status"]
 
-            current_app.logger.info(f"    Statut: {status}")
-
             if status == "SUCCESS":
                 file_url = extraction["fileUrl"]
-                current_app.logger.info(f"     ✅ Fichier disponible : {file_url}")
-
             elif status in ["PENDING", "RUNNING"]:
                 time.sleep(2)
-
             else:
-                current_app.logger.error(
-                    f"     ❌ Tâche en erreur : {extraction.get('error')}"
-                )
-                break
+                raise RuntimeError(extraction.get("error") or f"Statut inattendu: {status}")
 
-        if not file_url:
-            continue
-
-        # 3) (Optionnel) Téléchargement local
-        zip_path = os.path.join(OUTPUT_DATA_DIR, os.path.basename(file_url))
+        # 3) Download + rename
+        # Nom demandé : data_<monitoringLocation>_<date>_<programme>.zip
+        safe_ml = utils_backend.safe_slug(monitoring_location)
+        safe_prog = utils_backend.safe_slug(prog)
+        filename = f"data_{safe_ml}_{ts}_{safe_prog}.zip"
+        local_path = os.path.join(output_dir, filename)
 
         try:
-            r = requests.get(file_url)
+            r = requests.get(file_url, timeout=120)
             r.raise_for_status()
-
-            with open(zip_path, "wb") as f:
+            with open(local_path, "wb") as f:
                 f.write(r.content)
-
-            current_app.logger.info(
-                f"     💾 ZIP téléchargé localement : {zip_path}"
-            )
-
         except Exception as e:
-            current_app.logger.warning(
-                f"     ⚠️ Erreur lors du téléchargement : {e}"
-            )
+            current_app.logger.warning(f"   ⚠️ Erreur téléchargement {prog} : {e}")
+            continue
 
-        download_links.append(file_url)
+        results.append({
+            "file_name": filename,
+            # URL finale: /quadrige/output_data/<extraction_id>/<filename>
+            "url": None,  # on la set dans routes.py (car extraction_id est connu là-bas)
+        })
 
-    return download_links
+    return results

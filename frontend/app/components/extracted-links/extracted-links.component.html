@@ -1,15 +1,19 @@
 <div class="card">
+  
   <h3>{{ title }}</h3>
 
-  <ul *ngIf="files.length > 0; else noFiles">
-    <li *ngFor="let fichier of files">
-      <div class="file-info">
-        <span class="file-icon" [ngClass]="getFileIconClass(fichier.file_name)"></span>
-        <strong>{{ fichier.file_name }}</strong>
-      </div>
-      <a [href]="fichier.url" target="_blank">{{ fichier.url }}</a>
-    </li>
-  </ul>
+    <ul *ngIf="files.length > 0; else noFiles">
+      <li *ngFor="let fichier of files">
+        <div class="file-info">
+          <span class="file-icon" [ngClass]="getFileIconClass(fichier.file_name)"></span>
+          <strong>{{ fichier.file_name }}</strong>
+        </div>
+          <a [href]="fichier.url" download>
+            {{ fichier.file_name }}
+          </a>
+
+      </li>
+    </ul>
 
   <ng-template #noFiles>
     <p>Aucun fichier disponible pour l’instant.</p>
