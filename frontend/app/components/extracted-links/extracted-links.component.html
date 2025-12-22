@@ -4,15 +4,26 @@
 
     <ul *ngIf="files.length > 0; else noFiles">
       <li *ngFor="let fichier of files">
-        <div class="file-info">
-          <span class="file-icon" [ngClass]="getFileIconClass(fichier.file_name)"></span>
-          <strong>{{ fichier.file_name }}</strong>
-        </div>
-          <a [href]="fichier.url" download>
-            {{ fichier.file_name }}
-          </a>
-
-      </li>
+      <div class="file-info">
+          <span
+            class="file-icon"
+            [ngClass]="getFileIconClass(fichier.file_name)">
+          </span>
+        <strong>{{ fichier.file_name }}</strong>
+      
+        <!-- ⚠️ Badge warning -->
+        <span
+          *ngIf="fichier.status === 'WARNING'"
+          class="file-warning"
+          title="Extraction terminée mais aucune donnée n’a été trouvée">
+          ⚠️ Aucune donnée
+        </span>
+      </div>
+    
+      <a [href]="fichier.url" download>
+        Télécharger
+      </a>
+    </li>
     </ul>
 
   <ng-template #noFiles>

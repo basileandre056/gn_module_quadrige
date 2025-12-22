@@ -246,7 +246,13 @@ export class ProgrammeListComponent implements OnInit {
       next: (res: ExtractionResponse) => {
         if (res?.status === 'ok') {
           this.extractedDataFiles = this.mapToExtractedLinks(res?.fichiers_zip);
-          this.message = `Fichiers extraits (${this.extractedDataFiles.length})`;
+          const warnings = this.extractedDataFiles.filter(f => f.status === 'WARNING');
+
+          if (warnings.length > 0) {
+            this.message = `⚠️ Extraction terminée — certaines extractions n'ont retourné aucune donnée`;
+          } else {
+            this.message = `✅ Extraction terminée (${this.extractedDataFiles.length} fichier(s))`;
+          }
         } else {
           this.message = res?.message ?? 'Réponse inattendue du serveur';
           this.extractedDataFiles = [];

@@ -76,12 +76,15 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
             extraction = status_response["getExtraction"]
             status = extraction["status"]
 
-            if status == "SUCCESS":
+            if status in ["SUCCESS", "WARNING"]:
                 file_url = extraction["fileUrl"]
+                warning_message = extraction.get("error")
             elif status in ["PENDING", "RUNNING"]:
                 time.sleep(2)
             else:
                 raise RuntimeError(extraction.get("error") or f"Statut inattendu: {status}")
+
+
 
         # 3) Download + rename
         # Nom demandé : data_<monitoringLocation>_<date>_<programme>.zip
@@ -114,8 +117,9 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
 
         results.append({
             "file_name": filename,
-            # URL finale: /quadrige/output_data/<extraction_id>/<filename>
-            "url": None,  # on la set dans routes.py (car extraction_id est connu là-bas)
+            "url": None,
+            "status": status,
+            "warning": warning_message if status == "WARNING" else None,
         })
 
     return results

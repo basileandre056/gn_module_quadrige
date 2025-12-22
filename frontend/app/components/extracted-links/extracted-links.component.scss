@@ -115,3 +115,17 @@
   font-style: italic;
   margin: 0.5rem 0 0;
 }
+
+
+/* --- Warning extraction --- */
+.file-warning {
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #a15c00;
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  white-space: nowrap;
+}
