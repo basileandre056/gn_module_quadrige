@@ -85,8 +85,17 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
         filename = f"data_{safe_ml}_{ts}_{safe_prog}.zip"
         local_path = os.path.join(output_dir, filename)
 
+        current_app.logger.info(f"[DATA] Téléchargement ZIP: {file_url}")
+
+
+
         try:
-            r = requests.get(file_url, timeout=120, stream=True)
+            r = requests.get(
+            file_url,
+            headers={"Authorization": f"token {access_token}"},
+            timeout=120,
+            stream=True,
+        )
             r.raise_for_status()
             
             with open(local_path, "wb") as f:

@@ -1,8 +1,8 @@
 # backend/gn_module_quadrige/routes.py
 import os
 import requests
-from flask import request, jsonify, send_from_directory, abort
 import json
+from flask import request, jsonify, send_from_directory, abort, current_app
 
 
 from .extraction_data import extract_ifremer_data
@@ -50,7 +50,7 @@ def init_routes(bp):
             utils_backend.nettoyer_csv(brut_path, filtered_path, monitoring_location)
             programmes_json = utils_backend.csv_to_programmes_json(filtered_path)
 
-            base_url = "/geonature/api/quadrige/programs/"
+            base_url = "/geonature/api/quadrige/programs"
             return jsonify({
                 "status": "ok",
                 "fichiers_csv": [
@@ -86,6 +86,9 @@ def init_routes(bp):
         utils_backend.cleanup_old_dirs(utils_backend.OUTPUT_DATA_DIR, keep=3)
 
         ts = utils_backend.now_ts()
+
+        current_app.logger.info(f"[DATA] Programmes reçus: {programmes}")
+        current_app.logger.info(f"[DATA] MonitoringLocation: {monitoring_location}")
 
         try:
             files = extract_ifremer_data(
@@ -162,7 +165,7 @@ def init_routes(bp):
             if f.endswith(".csv"):
                 fichiers_csv.append({
                     "file_name": f,
-                    "url": f"/quadrige/programs/{last_dir}/{f}",
+                    "url": f"/geonature/api/quadrige/programs/{last_dir}/{f}",
                 })
                 if "filtered" in f:
                     filtered_csv = os.path.join(last_dir_path, f)
@@ -256,13 +259,14 @@ def init_routes(bp):
         fichiers_csv = [
             {
                 "file_name": os.path.basename(brut_csv),
-                "url": f"/quadrige/programs/{last_dir}/{os.path.basename(brut_csv)}",
+                "url": f"/geonature/api/quadrige/programs/{last_dir}/{os.path.basename(brut_csv)}",
             },
             {
                 "file_name": os.path.basename(filtered_csv),
-                "url": f"/quadrige/programs/{last_dir}/{os.path.basename(filtered_csv)}",
+                "url": f"/geonature/api/quadrige/programs/{last_dir}/{os.path.basename(filtered_csv)}",
             },
         ]
+
 
         return jsonify({
             "status": "ok",
