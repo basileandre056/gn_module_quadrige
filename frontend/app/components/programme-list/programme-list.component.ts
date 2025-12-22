@@ -129,10 +129,10 @@ export class ProgrammeListComponent implements OnInit {
   }
 
   openProgramFilter(): void {
-  this.message = 'openProgramFilter() click';
+  
   this.showDataFilter = false;
   this.showProgramFilter = true;
-  this.message = `showProgramFilter = ${ this.showProgramFilter}`;
+  
   }
 
   onDataFilterApplied(filterData: any): void {
