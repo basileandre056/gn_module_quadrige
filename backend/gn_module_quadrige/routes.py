@@ -50,7 +50,7 @@ def init_routes(bp):
             utils_backend.nettoyer_csv(brut_path, filtered_path, monitoring_location)
             programmes_json = utils_backend.csv_to_programmes_json(filtered_path)
 
-            base_url = "/quadrige/programs"
+            base_url = "/geonature/api/quadrige/programs/"
             return jsonify({
                 "status": "ok",
                 "fichiers_csv": [
@@ -102,7 +102,7 @@ def init_routes(bp):
             return jsonify({"status": "warning", "message": "Aucun fichier généré"}), 404
 
         # compléter les URLs maintenant qu'on a extraction_id
-        base_url = "/quadrige/output_data"
+        base_url = "/geonature/api/quadrige/output_data"
         for f in files:
             f["url"] = f"{base_url}/{extraction_id}/{f['file_name']}"
 
@@ -195,11 +195,11 @@ def init_routes(bp):
     def filtrage_seul():
         data = request.json or {}
         program_filter = data.get("filter", {})
-    
+
         # Si pas de filtre fourni → on reprend le dernier
         if not program_filter:
             program_filter = utils_backend.charger_filtre()
-    
+
         monitoring_location = program_filter.get("monitoringLocation", "")
         if not monitoring_location:
             return jsonify({
@@ -208,34 +208,34 @@ def init_routes(bp):
                 "programmes": [],
                 "fichiers_csv": [],
             }), 200
-    
+
         base_dir = utils_backend.PROGRAMS_DIR
-    
+
         if not os.path.exists(base_dir):
             return jsonify({"status": "empty"}), 200
-    
+
         # Dernier dossier programmes
         dirs = sorted(
             [d for d in os.listdir(base_dir) if os.path.isdir(os.path.join(base_dir, d))],
             key=lambda d: os.path.getmtime(os.path.join(base_dir, d)),
             reverse=True,
         )
-    
+
         if not dirs:
             return jsonify({"status": "empty"}), 200
-    
+
         last_dir = dirs[0]
         last_dir_path = os.path.join(base_dir, last_dir)
-    
+
         brut_csv = None
         filtered_csv = None
-    
+
         for f in os.listdir(last_dir_path):
             if f.endswith("_brut.csv"):
                 brut_csv = os.path.join(last_dir_path, f)
             if f.endswith("_filtered.csv"):
                 filtered_csv = os.path.join(last_dir_path, f)
-    
+
         if not brut_csv or not os.path.exists(brut_csv):
             return jsonify({
                 "status": "warning",
@@ -243,16 +243,16 @@ def init_routes(bp):
                 "programmes": [],
                 "fichiers_csv": [],
             }), 200
-    
+
         # Re-filtrage
         utils_backend.nettoyer_csv(
             brut_csv,
             filtered_csv,
             monitoring_location,
         )
-    
+
         programmes = utils_backend.csv_to_programmes_json(filtered_csv)
-    
+
         fichiers_csv = [
             {
                 "file_name": os.path.basename(brut_csv),
@@ -263,7 +263,7 @@ def init_routes(bp):
                 "url": f"/quadrige/programs/{last_dir}/{os.path.basename(filtered_csv)}",
             },
         ]
-    
+
         return jsonify({
             "status": "ok",
             "message": "Filtrage relancé avec succès",
