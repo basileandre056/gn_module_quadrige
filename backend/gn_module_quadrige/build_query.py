@@ -2,53 +2,47 @@
 from gql import gql
 
 
-def build_extraction_query(programme: str, filter_data: dict):
-    """
-    Construit une requête GraphQL executeResultExtraction en fonction
-    du programme et des paramètres envoyés par le frontend.
+def build_extraction_query(program_name: str, filter_data: dict):
+    fields = filter_data.get("fields")
+    if not fields or not isinstance(fields, list):
+        raise ValueError("Liste de champs 'fields' manquante ou invalide")
 
-    Args:
-        programme (str): identifiant du programme
-        filter_data (dict): contient (name, fields, startDate, endDate,
-                            monitoringLocation, ...)
-    """
-    name = filter_data.get("name", "").lower()
-    fields = filter_data.get("fields", [])
-    start_date = filter_data.get("startDate", "")
-    end_date = filter_data.get("endDate", "")
-    monitoring_location = filter_data.get("monitoringLocation", "")
+    periods = []
+    if filter_data.get("startDate") and filter_data.get("endDate"):
+        periods.append({
+            "startDate": filter_data["startDate"],
+            "endDate": filter_data["endDate"],
+        })
 
-    formatted_fields = ",\n                        ".join(fields)
+    fields_graphql = ", ".join(fields)
 
-    periods_part = ""
-    if start_date and end_date:
-        periods_part = f"""
-                periods: [{{ startDate: "{start_date}", endDate: "{end_date}" }}]"""
+    periods_graphql = ""
+    if periods:
+        periods_graphql = f"""
+        periods: [{{
+          startDate: "{periods[0]['startDate']}"
+          endDate: "{periods[0]['endDate']}"
+        }}]
+        """
 
-    monitoring_part = ""
-    if monitoring_location:
-        monitoring_part = f"""
-                    monitoringLocation: {{ text: "{monitoring_location}" }}"""
-
-    query = f"""
-    query {{
-        executeResultExtraction(
-            filter: {{
-                name: "{name}"
-                fields: [
-                    {formatted_fields}
-                ]{periods_part}
-                mainFilter: {{
-                    program: {{ ids: ["{programme}"] }}{monitoring_part}
-                }}
+    return gql(f"""
+    mutation {{
+      executeResultExtraction(
+        filter: {{
+          name: "{filter_data.get('name', 'Extraction données')}"
+          fields: [{fields_graphql}]
+          {periods_graphql}
+          mainFilter: {{
+            program: {{
+              ids: ["{program_name}"]
             }}
-        ) {{
-            id
-            name
-            startDate
-            status
+          }}
         }}
+      ) {{
+        id
+        name
+        startDate
+        status
+      }}
     }}
-    """
-
-    return gql(query)
+    """)

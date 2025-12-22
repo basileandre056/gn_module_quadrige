@@ -46,8 +46,13 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
         }
     """)
 
+    current_app.logger.info(f"[DATA] filter_data = {filter_data}")
+
+
     for prog in programmes:
         current_app.logger.info(f"[extract_ifremer_data] Programme : {prog}")
+        current_app.logger.info(f"[DATA] filter_data = {filter_data}")
+
 
         # 1) Lancer la tâche
         try:
