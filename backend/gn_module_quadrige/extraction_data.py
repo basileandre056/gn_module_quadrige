@@ -48,71 +48,57 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
 
     current_app.logger.info(f"[DATA] filter_data = {filter_data}")
 
-
+    current_app.logger.warning(f"[DEBUG] programmes = {programmes}")
+    
     for prog in programmes:
-        current_app.logger.info(f"[extract_ifremer_data] Programme : {prog}")
-        current_app.logger.info(f"[DATA] filter_data = {filter_data}")
-
-
-        # 1) Lancer la tâche
+        current_app.logger.warning(f"[DEBUG] === PROGRAMME {prog} ===")
+    
         try:
             execute_query = build_extraction_query(prog, filter_data)
             response = client.execute(execute_query)
             task_id = response["executeResultExtraction"]["id"]
-        except Exception as e:
-            current_app.logger.error(f"   ❌ Erreur lancement extraction {prog} : {e}")
+            current_app.logger.warning(f"[DEBUG] task_id={task_id}")
+        except Exception:
+            current_app.logger.exception("[DEBUG] Erreur lancement extraction")
             continue
-
-        # 2) Polling
+    
         file_url = None
-        MAX_WAIT = 300
+        status = None
         start = time.time()
-
+    
         while file_url is None:
-            if time.time() - start > MAX_WAIT:
-                raise TimeoutError(f"Extraction Ifremer trop longue (programme {prog})")
-
+            if time.time() - start > 300:
+                raise TimeoutError("Timeout extraction")
+    
             status_response = client.execute(status_query, variable_values={"id": task_id})
             extraction = status_response["getExtraction"]
+    
             status = extraction["status"]
-
-            if status in ["SUCCESS", "WARNING"]:
-                file_url = extraction["fileUrl"]
-                warning_message = extraction.get("error")
-            elif status in ["PENDING", "RUNNING"]:
+            file_url = extraction["fileUrl"]
+    
+            current_app.logger.warning(
+                f"[DEBUG] polling prog={prog} status={status} fileUrl={file_url}"
+            )
+    
+            if status in ["PENDING", "RUNNING"]:
                 time.sleep(2)
             else:
-                raise RuntimeError(extraction.get("error") or f"Statut inattendu: {status}")
-
-
-
-        # 3) Download + rename
-        # Nom demandé : data_<monitoringLocation>_<date>_<programme>.zip
-        safe_ml = utils_backend.safe_slug(monitoring_location)
-        safe_prog = utils_backend.safe_slug(prog)
-        filename = f"data_{safe_ml}_{ts}_{safe_prog}.zip"
-        local_path = os.path.join(output_dir, filename)
-
-        current_app.logger.info(f"[DATA] Téléchargement ZIP: {file_url}")
-
-
-
+                break
+    
+        if not file_url:
+            current_app.logger.warning(f"[DEBUG] PAS DE fileUrl pour {prog}")
+            continue
+    
         try:
-            r = requests.get(
-            file_url,
-            headers={"Authorization": f"token {access_token}"},
-            timeout=120,
-            stream=True,
-        )
+            current_app.logger.warning(f"[DEBUG] Téléchargement {file_url}")
+            r = requests.get(file_url, headers={"Authorization": f"token {access_token}"}, timeout=120)
             r.raise_for_status()
-            
+    
             with open(local_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
-
-        except Exception as e:
-            current_app.logger.warning(f"   ⚠️ Erreur téléchargement {prog} : {e}")
+                f.write(r.content)
+    
+        except Exception:
+            current_app.logger.exception("[DEBUG] Erreur téléchargement")
             continue
 
         results.append({

@@ -4,7 +4,7 @@ from gql import gql
 
 def build_extraction_query(program_name: str, filter_data: dict):
     """
-    Construit une mutation executeResultExtraction conforme à l'API Quadrige.
+    Construit une query executeResultExtraction conforme à l'API Quadrige.
     """
 
     # --- validations ---
@@ -31,11 +31,10 @@ def build_extraction_query(program_name: str, filter_data: dict):
     filter_name = filter_data.get("name", "Extraction données")
 
     query = f"""
-    mutation {{
+    query {{
       executeResultExtraction(
         filter: {{
           name: "{filter_name}"
-          extractionFilterVersion: "2"
           fields: [{fields_graphql}]
           {periods_graphql}
           mainFilter: {{

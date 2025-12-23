@@ -90,6 +90,9 @@ def init_routes(bp):
         current_app.logger.info(f"[DATA] Programmes reçus: {programmes}")
         current_app.logger.info(f"[DATA] MonitoringLocation: {monitoring_location}")
 
+        current_app.logger.warning(f"[DEBUG] programmes reçus = {programmes} ({type(programmes)})")
+
+
         try:
             files = extract_ifremer_data(
                 programmes=programmes,
