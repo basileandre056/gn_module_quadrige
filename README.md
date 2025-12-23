@@ -112,6 +112,7 @@ Ce comportement est **volontaire** et garantit la robustesse du module.
 - Cache des résultats par programme
 - Amélioration du retour utilisateur (progression fine)
 - Intégrer les localisation les champs sugérés dans les filtres d'extraction au fichier de config
+- 
 
 ---
 
