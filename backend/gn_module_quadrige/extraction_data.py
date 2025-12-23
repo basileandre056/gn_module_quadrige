@@ -60,7 +60,8 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
     # ======================
     completed = {}
     start = time.time()
-    MAX_WAIT = 600
+    MAX_WAIT = max(600, len(programmes) * 15)
+
     
     remaining = set(jobs.keys())
     
@@ -129,7 +130,7 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
         status = data["status"]
         file_url = data["file_url"]
         error_msg = data["error"]
-    
+
         if status == "ERROR":
             results.append({
                 "programme": prog,
@@ -140,7 +141,7 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
                 "error": error_msg,
             })
             continue
-    
+
         if status == "WARNING" and not file_url:
             results.append({
                 "programme": prog,
@@ -151,7 +152,7 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
                 "error": None,
             })
             continue
-    
+
         if not file_url:
             results.append({
                 "programme": prog,
@@ -165,8 +166,7 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
 
     # téléchargement normal (inchangé)
 
-        if not file_url:
-            raise RuntimeError(f"{prog} : pas de fileUrl")
+        
 
         filename = (
             f"data_{utils_backend.safe_slug(monitoring_location)}_"
@@ -188,10 +188,11 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
                     f.write(chunk)
 
         results.append({
+            "programme": prog,
             "file_name": filename,
             "url": None,
             "status": status,
             "warning": None,
+            "error": None,
         })
-
     return results

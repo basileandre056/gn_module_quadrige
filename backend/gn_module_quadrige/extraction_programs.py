@@ -81,6 +81,10 @@ def extract_programs(filter_data: dict):
             time.sleep(sleep)
             sleep = min(sleep + 1, 10)
         else:
-            raise RuntimeError(f"Tâche en erreur : {extraction.get('error')}")
+            return {
+                "status": "ERROR",
+                "file_url": None,
+                "error": extraction.get("error"),
+            }
 
     return file_url
