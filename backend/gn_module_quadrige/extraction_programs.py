@@ -70,8 +70,11 @@ def extract_programs(filter_data: dict):
         extraction = status_resp["getExtraction"]
         status = extraction["status"]
 
-        if status == "SUCCESS":
+        if status in ["SUCCESS", "WARNING"]:
             file_url = extraction["fileUrl"]
+            current_app.logger.warning(
+                f"[PROGRAM EXTRACTION] status={status} error={extraction.get('error')}"
+            )
         elif status in ["PENDING", "RUNNING"]:
             time.sleep(2)
         else:

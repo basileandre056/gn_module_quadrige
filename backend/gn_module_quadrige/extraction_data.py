@@ -49,57 +49,77 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
     current_app.logger.info(f"[DATA] filter_data = {filter_data}")
 
     current_app.logger.warning(f"[DEBUG] programmes = {programmes}")
-    
+
     for prog in programmes:
         current_app.logger.warning(f"[DEBUG] === PROGRAMME {prog} ===")
-    
+
         try:
             execute_query = build_extraction_query(prog, filter_data)
             response = client.execute(execute_query)
+            current_app.logger.warning(f"[DEBUG] GraphQL response = {response}")
+            
+            if not response or "executeResultExtraction" not in response:
+                raise RuntimeError(f"Réponse GraphQL invalide: {response}")
+            
             task_id = response["executeResultExtraction"]["id"]
+
             current_app.logger.warning(f"[DEBUG] task_id={task_id}")
-        except Exception:
-            current_app.logger.exception("[DEBUG] Erreur lancement extraction")
-            continue
-    
+        except Exception as e:
+            current_app.logger.exception("🔥 ERREUR CRITIQUE extraction")
+            raise
+
         file_url = None
         status = None
         start = time.time()
-    
+
         while file_url is None:
             if time.time() - start > 300:
                 raise TimeoutError("Timeout extraction")
-    
+
             status_response = client.execute(status_query, variable_values={"id": task_id})
             extraction = status_response["getExtraction"]
-    
+
             status = extraction["status"]
-            file_url = extraction["fileUrl"]
-    
-            current_app.logger.warning(
-                f"[DEBUG] polling prog={prog} status={status} fileUrl={file_url}"
-            )
-    
+            file_url = extraction.get("fileUrl")
+
+            if status in ["SUCCESS", "WARNING"] and file_url:
+                break
+
             if status in ["PENDING", "RUNNING"]:
                 time.sleep(2)
-            else:
-                break
-    
+                continue
+
+            raise RuntimeError(f"Extraction en erreur: {extraction.get('error')}")
+
+
+        current_app.logger.warning(f"[DEBUG] Téléchargement {file_url}")
+
+
+        safe_ml = utils_backend.safe_slug(monitoring_location)
+        safe_prog = utils_backend.safe_slug(prog)
+        filename = f"data_{safe_ml}_{ts}_{safe_prog}.zip"
+        local_path = os.path.join(output_dir, filename)
+        warning_message = None
+
+
         if not file_url:
             current_app.logger.warning(f"[DEBUG] PAS DE fileUrl pour {prog}")
             continue
-    
+
         try:
             current_app.logger.warning(f"[DEBUG] Téléchargement {file_url}")
+            if not file_url or not file_url.startswith("http"):
+                raise RuntimeError(f"fileUrl invalide: {file_url}")
+
             r = requests.get(file_url, headers={"Authorization": f"token {access_token}"}, timeout=120)
             r.raise_for_status()
-    
+
             with open(local_path, "wb") as f:
                 f.write(r.content)
-    
-        except Exception:
-            current_app.logger.exception("[DEBUG] Erreur téléchargement")
-            continue
+
+        except Exception as e:
+            current_app.logger.exception("🔥 ERREUR CRITIQUE extraction")
+            raise
 
         results.append({
             "file_name": filename,
