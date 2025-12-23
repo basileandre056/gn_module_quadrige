@@ -15,7 +15,7 @@
         <span
           *ngIf="fichier.status === 'WARNING'"
           class="file-warning"
-          title="Extraction terminée mais aucune donnée n’a été trouvée">
+          title="{{ fichier.warning || 'Aucune donnée trouvée pour ce filtre' }}">
           ⚠️ Aucune donnée
         </span>
       </div>
