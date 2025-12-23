@@ -62,6 +62,8 @@ def extract_programs(filter_data: dict):
     MAX_WAIT = 300
     start = time.time()
 
+    sleep = 2
+
     while file_url is None:
         if time.time() - start > MAX_WAIT:
             raise TimeoutError("Extraction programmes trop longue")
@@ -76,7 +78,8 @@ def extract_programs(filter_data: dict):
                 f"[PROGRAM EXTRACTION] status={status} error={extraction.get('error')}"
             )
         elif status in ["PENDING", "RUNNING"]:
-            time.sleep(2)
+            time.sleep(sleep)
+            sleep = min(sleep + 1, 10)
         else:
             raise RuntimeError(f"Tâche en erreur : {extraction.get('error')}")
 
