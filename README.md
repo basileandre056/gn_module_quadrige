@@ -1,249 +1,117 @@
+# gn_module_quadrige
 
-# Module GeoNature Quadrige — Guide d'installation
+Module GeoNature permettant l’extraction de **programmes** et de **données Quadrige** via l’API GraphQL Ifremer, avec une interface utilisateur intégrée à GeoNature.
 
-## Présentation
-
-Le module **Quadrige** permet d'interfacer GeoNature avec l'API GraphQL d'Ifremer afin d'extraire :
-- la liste des programmes,  
-- les données associées,  
-- et les fichiers ZIP générés par Quadrige Core.  
-
-Le module propose :
-- un **backend Python/Flask** intégré à GeoNature  
-- un **frontend Angular** intégré automatiquement via le module GeoNature  
+Ce module a été conçu pour :
+- gérer des extractions potentiellement longues,
+- rester robuste face aux erreurs partielles,
+- fournir une expérience utilisateur compréhensible même en cas de résultats incomplets.
 
 ---
 
-# TO_DO.md — Préparation complète avant déploiement du module Quadrige
+## 📚 Documentation
 
-## 🟦 1. Accès au bastion via Apache Guacamole
+La documentation complète du module est disponible dans le dossier :
 
-**Guacamole** permet d’accéder à une VM Windows interne, depuis laquelle on se connecte en SSH au serveur GeoNature.
+👉 https://github.com/basileandre056/gn_module_quadrige/tree/main/documentation
 
-### Étapes :
-1. Ouvrir un navigateur.  
-2. Désactiver le proxy (important).  
-3. Accéder à :
+### Documents disponibles
 
-   `https://165.169.200.105/guacamole/`
+- **📘 Documentation utilisateur**  
+  👉 [`doc_user.md`](documentation/doc_user.md)  
+  Explique le fonctionnement du module côté utilisateur (sans détails techniques).
 
-4. Se connecter :
-   - Login : `rbouilly`
-   - Mot de passe : ...
+- **🛠 Documentation technique**  
+  👉 [`doc_technique.md`](documentation/doc_technique.md)  
+  Destinée aux développeurs : architecture, routes, flux d’extraction, choix techniques.
 
-Résultat attendu :  
-Connexion à Apache Guacamole.
-
----
-
-## 🟦 2. Comprendre les flux d’accès
-
-- Guacamole → VM Windows  
-- VM Windows → SSH vers le serveur GeoNature
-
-### Infos nécessaires :
-- IP du serveur GeoNature  
-- Identifiants SSH  
-- Port SSH éventuel  
-
+- **🖥 Modifications serveur**  
+  👉 [`modifications_server.md`](documentation/modifications_server.md)  
+  Résume les ajustements effectués sur le serveur (Apache / Gunicorn / timeouts).
 
 ---
 
+## ⚙️ Configuration
 
-## 🟦 4. Vérifications du serveur GeoNature
+Actuellement, le backend utilise **uniquement** les paramètres suivants de la configuration Quadrige :
 
-### 4.1 Vérifier les services
+- `graphql_url`
+- `access_token`
 
-```bash
-sudo systemctl status geonature
-sudo systemctl status geonature-web
-sudo systemctl status geonature-workers
-```
+Les autres éléments (comme les localisations proposées et les champs extractibles) sont définis **côté frontend** dans le fichier :
 
----
-
-## 🟦 5. Vérifications du module Quadrige AVANT installation
-
-### 5.1 Vérifier la structure du projet
+frontend/app/constants/quadrige_constants.ts
 
 
-✔ Structure compatible avec GeoNature  
-✔ `MODULE_CODE = "quadrige"`  
-✔ Entrypoints définis dans `setup.py`
-
-### 5.2 Vérifier que le TOML d’exemple existe (local)
-
-Dans le dépôt local :
-
-```text
-gn_module_quadrige/module_code_config.toml
-```
-
-Contenu attendu :
-
-```toml
-# -------- CONFIG FRONTEND -------
-MODULE_CODE = "QUADRIGE"
-MODULE_URL  = "/quadrige"
-TITLE_MODULE = "Module Quadrige"
-DESCRIPTION_MODULE = "Extraction Quadrige – Ifremer"
-ICON = "assets/quadrige/picto.png"
-
-[PERMISSION_LEVEL]
-module = "QUADRIGE_MODULES"
-
-# -------- CONFIG BACKEND -------
-graphql_url = "https://quadrige-core.ifremer.fr/graphql/public"
-access_token="2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:96A2A2AEDE6115BE9C462247461D26B317CD1602D73AE47408EDA70A04DCF21A:1|mhQMC3j5nad54G615G7NotJILcTeQv9KKbr8Fj+pn6Sk2T+pY3xIdNikUzIuJ3T43FeNKBYAlKnQNWpvhdKWBg=="
-# Lieux Ifremer
-locations = [
-  { code = "126-", label = "Réunion" },
-  { code = "145-", label = "Mayotte" },
-  { code = "048-", label = "Maurice" },
-  { code = "153-", label = "Île Tromelin" },
-  { code = "152-", label = "Îles Glorieuses" },
-  { code = "154-", label = "Île Juan de Nova" },
-  { code = "155-", label = "Île Bassas da India" },
-  { code = "156-", label = "Île Europa" }
-]
-
-# Champs d'extraction
-extractable_fields = [
-  "MEASUREMENT_COMMENT",
-  "MEASUREMENT_PMFMU_METHOD_NAME",
-  "MEASUREMENT_NUMERICAL_VALUE",
-  "MEASUREMENT_PMFMU_PARAMETER_NAME",
-  "MEASUREMENT_REFERENCE_TAXON_NAME",
-  "MEASUREMENT_REFERENCE_TAXON_TAXREF",
-  "MEASUREMENT_STRATEGIES_NAME",
-  "MEASUREMENT_UNDER_MORATORIUM",
-  "MEASUREMENT_PMFMU_UNIT_SYMBOL",
-  "MONITORING_LOCATION_BATHYMETRY",
-  "MONITORING_LOCATION_CENTROID_LATITUDE",
-  "MONITORING_LOCATION_CENTROID_LONGITUDE",
-  "MONITORING_LOCATION_ID",
-  "MONITORING_LOCATION_LABEL",
-  "MONITORING_LOCATION_NAME",
-  "SAMPLE_LABEL",
-  "SAMPLE_MATRIX_NAME",
-  "SAMPLE_SIZE",
-  "SAMPLE_TAXON_NAME",
-  "SURVEY_COMMENT",
-  "SURVEY_DATE",
-  "SURVEY_LABEL",
-  "SURVEY_NB_INDIVIDUALS",
-  "SURVEY_OBSERVER_DEPARTMENT_ID",
-  "SURVEY_OBSERVER_DEPARTMENT_LABEL",
-  "SURVEY_OBSERVER_DEPARTMENT_NAME",
-  "SURVEY_OBSERVER_DEPARTMENT_SANDRE",
-  "SURVEY_OBSERVER_ID",
-  "SURVEY_OBSERVER_NAME",
-  "SURVEY_PROGRAMS_NAME",
-  "SURVEY_RECORDER_DEPARTMENT_ID",
-  "SURVEY_RECORDER_DEPARTMENT_LABEL",
-  "SURVEY_RECORDER_DEPARTMENT_NAME",
-  "SURVEY_RECORDER_DEPARTMENT_SANDRE",
-  "SURVEY_TIME",
-  "SURVEY_UNDER_MORATORIUM"
-]
-
-```
----
-
-# 🟦 6. Installation du module Quadrige sur le serveur GeoNature
-
-## 6.1 Télécharger le module
-```bash
-cd ~/geonature
-git clone https://github.com/basileandre056/gn_module_quadrige.git
-cd gn_module_quadrige
-git checkout rdv_equipe_geonature
-
-```
-## 6.2 Installation GLOBALE
-
-Installation globale 
-
-```bash
-source ~/geonature/backend/venv/bin/activate
-
-geonature install-gn-module ~/gn_module_quadrige QUADRIGE
-
-
-```
-
-
-## 6.3 Installation de la base de données du module
-
-```bash
-
-Si le module intègre un schéma, migrations ou tables spécifiques :
-
-```bash
-source ~/geonature2/venv/bin/activate
-geonature upgrade-modules-db quadrige
-```
+Cela permet :
+- de garder le backend générique,
+- d’ajuster facilement l’UX sans modifier le serveur.
 
 ---
 
-## 6.5 Configuration du module via GeoNature
+## 📦 Fonctionnement général
 
-```bash
-cp ~/gn_module_quadrige/quadrige_config.toml.example ~/geonature/config/quadrige_config.toml
+Le module fonctionne en deux grandes étapes :
 
-```
-pour l'éditer :
-```bash
-nano ~/geonature2/config/quadrige_config.toml
-```
-puis 
-### Rechargement automatique (GeoNature ≥ 2.12)
-```bash
-sudo systemctl restart geonature geonature-worker
-sudo systemctl status geonature
-```
+1. **Extraction des programmes**
+   - Filtrage par *monitoring location* (searchText)
+   - Génération d’un CSV brut puis d’un CSV filtré
+   - Sélection des programmes par l’utilisateur
 
-### Anciennes versions (< 2.12)
-```bash
-sudo systemctl reload geonature
-```
+2. **Extraction des données**
+   - Lancement des extractions pour chaque programme sélectionné
+   - Traitement en batch avec polling global
+   - Téléchargement des fichiers générés
+   - Gestion des erreurs programme par programme
 
 ---
 
-## 🟦 9. Vérification du chargement du module
+## ⚠️ À propos des programmes sans données retournées
 
-### 9.1 Tester l’API backend
+Lors d’une **extraction de données**, il est normal que **certains programmes ne retournent aucun fichier CSV**.  
+Cela ne signifie pas nécessairement une erreur technique.
 
-Depuis le serveur :
+Les causes les plus fréquentes sont :
 
-```bash
-curl http://10.172.2.156/geonature/api/quadrige/config
+- 🔹 **Champs sélectionnés incompatibles**  
+  Les champs choisis ne correspondent pas aux données disponibles pour ce programme.
 
-Résultat attendu :
-- une réponse JSON avec la config chargée et exposée par GeoNature,
-- **pas** d’erreur 500 Flask/Apache.
+- 🔹 **Période temporelle incorrecte**  
+  Les dates définies dans le filtre ne couvrent aucune donnée existante.
 
-### 9.2 Tester le frontend
+- 🔹 **Monitoring location incohérente**  
+  - Lors de l’extraction des programmes, le `searchText` peut accepter des formats ambigus  
+    (ex. `XXX-126` au lieu de `126-XXX`)
+  - Le programme est alors bien extrait, mais sa localisation réelle ne correspond pas
+  - Lors de l’extraction des données, la *monitoring location corrigée* est appliquée  
+    → aucune donnée n’est trouvée, et aucun CSV n’est généré
 
-Dans un navigateur :
+Dans ces cas :
+- le programme est marqué avec un statut **WARNING** ou **ERROR**,
+- les autres programmes continuent d’être traités normalement,
+- un résumé complet est renvoyé à l’utilisateur.
 
-```text
-http://10.172.2.156/geonature/#/quadrige
-```
-
-Le frontend du module Quadrige doit s’afficher (liste des programmes, filtres, etc.).
+Ce comportement est **volontaire** et garantit la robustesse du module.
 
 ---
 
-## 🟦 10. Tests des extractions Quadrige
+## ✅ Philosophie du module
 
-/tmp/quadrige_module/
-├── programs/
-│   ├── programmes_145-_20250414-103012/
-│   ├── programmes_126-_20250414-114455/
-│   └── programmes_048-_20250414-120102/
-│
-├── output_data/
-│   ├── 8b7b3c0e-...
-│   ├── 2e9a1a1f-...
-│   └── a44c9c5d-...
+- ❌ Pas d’échec global si un programme échoue
+- ✅ Traitement indépendant de chaque programme
+- ✅ Résultats partiels exploitables
+- ✅ Transparence pour l’utilisateur
+- ✅ Backend robuste face aux volumes importants
+
+---
+
+## 🔧 Évolutions possibles
+
+- Parallélisation contrôlée des téléchargements
+- Extraction asynchrone (task queue)
+- Cache des résultats par programme
+- Amélioration du retour utilisateur (progression fine)
+- Intégrer les localisation les champs sugérés dans les filtres d'extraction au fichier de config
+
+---
+
