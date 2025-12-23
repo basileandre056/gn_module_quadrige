@@ -18,11 +18,11 @@ os.makedirs(MEMORY_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DATA_DIR, exist_ok=True)
 os.makedirs(PROGRAMS_DIR, exist_ok=True)
 
-print("\n[QUADRIGE BACKEND] 🚀 Initialisation")
-print(f"[QUADRIGE BACKEND] BASE_DIR        = {BASE_DIR}")
-print(f"[QUADRIGE BACKEND] MEMORY_DIR      = {MEMORY_DIR}")
-print(f"[QUADRIGE BACKEND] OUTPUT_DATA_DIR = {OUTPUT_DATA_DIR}")
-print(f"[QUADRIGE BACKEND] PROGRAMS_DIR    = {PROGRAMS_DIR}\n")
+#print("\n[QUADRIGE BACKEND] 🚀 Initialisation")
+#print(f"[QUADRIGE BACKEND] BASE_DIR        = {BASE_DIR}")
+#print(f"[QUADRIGE BACKEND] MEMORY_DIR      = {MEMORY_DIR}")
+#print(f"[QUADRIGE BACKEND] OUTPUT_DATA_DIR = {OUTPUT_DATA_DIR}")
+#print(f"[QUADRIGE BACKEND] PROGRAMS_DIR    = {PROGRAMS_DIR}\n")
 
 
 def now_ts() -> str:

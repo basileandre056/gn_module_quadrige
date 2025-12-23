@@ -8,6 +8,14 @@ from flask import request, jsonify, send_from_directory, abort, current_app
 from .extraction_data import extract_ifremer_data
 from .extraction_programs import extract_programs
 from . import utils_backend
+import traceback
+from flask import got_request_exception
+
+def log_exception(sender, exception, **extra):
+    print("🔥🔥🔥 EXCEPTION FLASK 🔥🔥🔥")
+    print(traceback.format_exc())
+
+got_request_exception.connect(log_exception)
 
 
 
@@ -110,7 +118,10 @@ def init_routes(bp):
         # compléter les URLs maintenant qu'on a extraction_id
         base_url = "/geonature/api/quadrige/output_data"
         for f in files:
+        if f.get("file_name"):
             f["url"] = f"{base_url}/{extraction_id}/{f['file_name']}"
+        else:
+            f["url"] = None
 
         return jsonify({
             "status": "ok",

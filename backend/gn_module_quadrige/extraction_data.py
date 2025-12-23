@@ -12,29 +12,20 @@ from . import utils_backend
 
 
 def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_location, ts):
-    """
-    Lance les extractions de résultats pour chaque programme et renvoie
-    une liste de fichiers ZIP (déjà téléchargés et renommés) :
-    [
-      {"file_name": "...zip", "url": "/quadrige/output_data/<extraction_id>/<file>.zip"},
-      ...
-    ]
-    """
+
     os.makedirs(output_dir, exist_ok=True)
 
     from geonature.utils.config import config as gn_config
     cfg = gn_config["QUADRIGE"]
-    graphql_url = cfg["graphql_url"]
-    access_token = cfg["access_token"]
 
     transport = RequestsHTTPTransport(
-        url=graphql_url,
+        url=cfg["graphql_url"],
         verify=True,
-        headers={"Authorization": f"token {access_token}"},
+        headers={"Authorization": f"token {cfg['access_token']}"},
+        timeout=60,
     )
-    client = Client(transport=transport, fetch_schema_from_transport=False)
 
-    results = []
+    client = Client(transport=transport, fetch_schema_from_transport=False)
 
     status_query = gql("""
         query getStatus($id: Int!) {
@@ -46,86 +37,96 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
         }
     """)
 
-    current_app.logger.info(f"[DATA] filter_data = {filter_data}")
-
-    current_app.logger.warning(f"[DEBUG] programmes = {programmes}")
+    results = []
 
     for prog in programmes:
-        current_app.logger.warning(f"[DEBUG] === PROGRAMME {prog} ===")
 
-        try:
-            execute_query = build_extraction_query(prog, filter_data)
-            response = client.execute(execute_query)
-            current_app.logger.warning(f"[DEBUG] GraphQL response = {response}")
-            
-            if not response or "executeResultExtraction" not in response:
-                raise RuntimeError(f"Réponse GraphQL invalide: {response}")
-            
-            task_id = response["executeResultExtraction"]["id"]
+        current_app.logger.warning(f"[DATA] ▶ Programme = {prog}")
 
-            current_app.logger.warning(f"[DEBUG] task_id={task_id}")
-        except Exception as e:
-            current_app.logger.exception("🔥 ERREUR CRITIQUE extraction")
-            raise
+        # ======================
+        # 1️⃣ Lancement extraction
+        # ======================
+        response = client.execute(
+            build_extraction_query(prog, filter_data)
+        )
 
-        file_url = None
-        status = None
+        job = response.get("executeResultExtraction")
+        if not job:
+            raise RuntimeError(f"Réponse GraphQL invalide : {response}")
+
+        job_id = job["id"]
+
+        # ======================
+        # 2️⃣ Polling
+        # ======================
         start = time.time()
 
-        while file_url is None:
+        while True:
             if time.time() - start > 300:
                 raise TimeoutError("Timeout extraction")
 
-            status_response = client.execute(status_query, variable_values={"id": task_id})
-            extraction = status_response["getExtraction"]
+            status_resp = client.execute(
+                status_query,
+                variable_values={"id": job_id}
+            )
 
+            extraction = status_resp["getExtraction"]
             status = extraction["status"]
             file_url = extraction.get("fileUrl")
+            error_msg = extraction.get("error")
 
-            if status in ["SUCCESS", "WARNING"] and file_url:
-                break
+            current_app.logger.warning(
+                f"[DATA] {prog} status={status} fileUrl={file_url}"
+            )
 
-            if status in ["PENDING", "RUNNING"]:
+            if status in ("PENDING", "RUNNING"):
                 time.sleep(2)
                 continue
 
-            raise RuntimeError(f"Extraction en erreur: {extraction.get('error')}")
+            if status in ("SUCCESS", "WARNING"):
+                break
 
+            # ERROR / FAILED / CANCELLED
+            raise RuntimeError(f"{prog} : {error_msg}")
 
-        current_app.logger.warning(f"[DEBUG] Téléchargement {file_url}")
-
-
-        safe_ml = utils_backend.safe_slug(monitoring_location)
-        safe_prog = utils_backend.safe_slug(prog)
-        filename = f"data_{safe_ml}_{ts}_{safe_prog}.zip"
-        local_path = os.path.join(output_dir, filename)
-        warning_message = None
-
-
-        if not file_url:
-            current_app.logger.warning(f"[DEBUG] PAS DE fileUrl pour {prog}")
+        # ======================
+        # 3️⃣ Cas WARNING sans fichier
+        # ======================
+        if status == "WARNING" and not file_url:
+            results.append({
+                "file_name": None,
+                "url": None,
+                "status": "WARNING",
+                "warning": error_msg,
+                "programme": prog,
+            })
             continue
 
-        try:
-            current_app.logger.warning(f"[DEBUG] Téléchargement {file_url}")
-            if not file_url or not file_url.startswith("http"):
-                raise RuntimeError(f"fileUrl invalide: {file_url}")
+        if status == "SUCCESS" and not file_url:
+            raise RuntimeError(f"{prog} : SUCCESS sans fileUrl")
 
-            r = requests.get(file_url, headers={"Authorization": f"token {access_token}"}, timeout=120)
-            r.raise_for_status()
 
-            with open(local_path, "wb") as f:
-                f.write(r.content)
+        # ======================
+        # 4️⃣ Téléchargement fichier
+        # ======================
+        filename = f"data_{utils_backend.safe_slug(monitoring_location)}_{ts}_{utils_backend.safe_slug(prog)}.zip"
+        local_path = os.path.join(output_dir, filename)
 
-        except Exception as e:
-            current_app.logger.exception("🔥 ERREUR CRITIQUE extraction")
-            raise
+        r = requests.get(
+            file_url,
+            headers={"Authorization": f"token {cfg['access_token']}"},
+            timeout=120
+        )
+        r.raise_for_status()
+
+        with open(local_path, "wb") as f:
+            f.write(r.content)
 
         results.append({
             "file_name": filename,
-            "url": None,
+            "url": None,  # complété dans la route
             "status": status,
-            "warning": warning_message if status == "WARNING" else None,
+            "warning": None,
         })
 
     return results
