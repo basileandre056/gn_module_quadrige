@@ -60,7 +60,7 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
     # ======================
     completed = {}
     start = time.time()
-    MAX_WAIT = 300
+    MAX_WAIT = 600
 
     remaining = set(jobs.keys())
 
