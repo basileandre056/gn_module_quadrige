@@ -61,35 +61,47 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
     completed = {}
     start = time.time()
     MAX_WAIT = 600
-
+    
     remaining = set(jobs.keys())
-
+    
     while remaining:
         if time.time() - start > MAX_WAIT:
-            raise TimeoutError(
-                f"Timeout global extraction ({len(remaining)} programmes restants)"
-            )
-
+            # timeout global → on marque le reste en ERROR
+            for prog in remaining:
+                completed[prog] = {
+                    "status": "ERROR",
+                    "file_url": None,
+                    "error": "Timeout global extraction",
+                }
+            break
+    
         for prog in list(remaining):
             job_id = jobs[prog]
-
-            status_resp = client.execute(
-                status_query,
-                variable_values={"id": job_id}
-            )
-
+    
+            try:
+                status_resp = client.execute(
+                    status_query,
+                    variable_values={"id": job_id}
+                )
+            except Exception as e:
+                completed[prog] = {
+                    "status": "ERROR",
+                    "file_url": None,
+                    "error": f"Erreur GraphQL: {e}",
+                }
+                remaining.remove(prog)
+                continue
+    
             extraction = status_resp["getExtraction"]
             status = extraction["status"]
             file_url = extraction.get("fileUrl")
             error_msg = extraction.get("error")
-
-            current_app.logger.warning(
-                f"[DATA] {prog} status={status}"
-            )
-
+    
+            current_app.logger.warning(f"[DATA] {prog} status={status}")
+    
             if status in ("PENDING", "RUNNING"):
                 continue
-
+    
             if status in ("SUCCESS", "WARNING"):
                 completed[prog] = {
                     "status": status,
@@ -98,12 +110,16 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
                 }
                 remaining.remove(prog)
                 continue
-
+    
             # ERROR / FAILED / CANCELLED
-            raise RuntimeError(f"{prog} : {error_msg}")
-
-        time.sleep(3)  # polling global plus doux
-
+            completed[prog] = {
+                "status": "ERROR",
+                "file_url": None,
+                "error": error_msg or "Erreur inconnue",
+            }
+            remaining.remove(prog)
+    
+        time.sleep(3)
     # ======================
     # 3️⃣ PHASE 3 — téléchargement des fichiers
     # ======================
@@ -113,16 +129,41 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
         status = data["status"]
         file_url = data["file_url"]
         error_msg = data["error"]
-
+    
+        if status == "ERROR":
+            results.append({
+                "programme": prog,
+                "file_name": None,
+                "url": None,
+                "status": "ERROR",
+                "warning": None,
+                "error": error_msg,
+            })
+            continue
+    
         if status == "WARNING" and not file_url:
             results.append({
+                "programme": prog,
                 "file_name": None,
                 "url": None,
                 "status": "WARNING",
                 "warning": error_msg,
-                "programme": prog,
+                "error": None,
             })
             continue
+    
+        if not file_url:
+            results.append({
+                "programme": prog,
+                "file_name": None,
+                "url": None,
+                "status": "ERROR",
+                "warning": None,
+                "error": "SUCCESS sans fileUrl",
+            })
+            continue
+
+    # téléchargement normal (inchangé)
 
         if not file_url:
             raise RuntimeError(f"{prog} : pas de fileUrl")
