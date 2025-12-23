@@ -1,56 +1,41 @@
+# backend/gn_module_quadrige/build_query.py
 from gql import gql
 
 
 def build_extraction_query(program_name: str, filter_data: dict):
     """
-    Construit la mutation GraphQL executeResultExtraction conforme à l'API Quadrige.
-
-    Obligatoire :
-      - fields (liste non vide)
-      - program_name
-      - monitoringLocation (injectée par la route via last_filter)
-
-    Optionnel :
-      - periods (startDate + endDate)
+    Construit une mutation executeResultExtraction conforme à l'API Quadrige.
     """
 
-    # --- Validations ---
+    # --- validations ---
     fields = filter_data.get("fields")
     if not fields or not isinstance(fields, list):
         raise ValueError("Liste de champs 'fields' manquante ou invalide")
 
-    if not program_name:
-        raise ValueError("Nom de programme manquant")
-
     monitoring_location = filter_data.get("monitoringLocation")
     if not monitoring_location:
-        raise ValueError("monitoringLocation manquante dans filter_data")
+        raise ValueError("monitoringLocation manquante")
 
-    # --- Champs ---
     fields_graphql = ", ".join(fields)
 
-    # --- Périodes (optionnelles) ---
+    # --- périodes (OPTIONNELLES) ---
     periods_graphql = ""
-    start_date = filter_data.get("startDate")
-    end_date = filter_data.get("endDate")
-
-    if start_date and end_date:
+    if filter_data.get("startDate") and filter_data.get("endDate"):
         periods_graphql = f"""
         periods: [{{
-          startDate: "{start_date}"
-          endDate: "{end_date}"
+          startDate: "{filter_data['startDate']}"
+          endDate: "{filter_data['endDate']}"
         }}]
         """
 
-    # --- Nom du filtre ---
     filter_name = filter_data.get("name", "Extraction données")
 
-    # --- Mutation GraphQL ---
-    return gql(f"""
+    query = f"""
     mutation {{
       executeResultExtraction(
         filter: {{
           name: "{filter_name}"
+          extractionFilterVersion: "2"
           fields: [{fields_graphql}]
           {periods_graphql}
           mainFilter: {{
@@ -69,4 +54,10 @@ def build_extraction_query(program_name: str, filter_data: dict):
         status
       }}
     }}
-    """)
+    """
+
+    print("\\n[QUADRIGE][GRAPHQL][DATA EXTRACTION]")
+    print(query)
+    print("----------------------------------\\n")
+
+    return gql(query)
