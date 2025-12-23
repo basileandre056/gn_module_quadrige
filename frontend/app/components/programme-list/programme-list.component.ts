@@ -139,6 +139,11 @@ export class ProgrammeListComponent implements OnInit {
     this.message = 'Filtre de données appliqué.';
     this.showDataFilter = false;
 
+    if (!filterData.fields?.some(f => f.startsWith('MEASUREMENT_'))) {
+      this.message = '⚠️ Sélectionnez au moins un champ de mesure';
+      return;
+    }
+
     const { monitoringLocation, ...filterWithoutLocation } = filterData;
     this.dataFilter = filterWithoutLocation;
   }
