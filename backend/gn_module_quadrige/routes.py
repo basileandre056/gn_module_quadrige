@@ -118,10 +118,10 @@ def init_routes(bp):
         # compléter les URLs maintenant qu'on a extraction_id
         base_url = "/geonature/api/quadrige/output_data"
         for f in files:
-        if f.get("file_name"):
-            f["url"] = f"{base_url}/{extraction_id}/{f['file_name']}"
-        else:
-            f["url"] = None
+            if f.get("file_name"):
+                f["url"] = f"{base_url}/{extraction_id}/{f['file_name']}"
+            else:
+                f["url"] = None
 
         return jsonify({
             "status": "ok",
