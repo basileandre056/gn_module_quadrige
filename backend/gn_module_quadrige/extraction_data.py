@@ -37,15 +37,14 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
         }
     """)
 
-    results = []
+    # ======================
+    # 1️⃣ PHASE 1 — lancer toutes les extractions
+    # ======================
+    jobs = {}  # programme -> job_id
 
     for prog in programmes:
+        current_app.logger.warning(f"[DATA] ▶ Lancement extraction : {prog}")
 
-        current_app.logger.warning(f"[DATA] ▶ Programme = {prog}")
-
-        # ======================
-        # 1️⃣ Lancement extraction
-        # ======================
         response = client.execute(
             build_extraction_query(prog, filter_data)
         )
@@ -54,16 +53,25 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
         if not job:
             raise RuntimeError(f"Réponse GraphQL invalide : {response}")
 
-        job_id = job["id"]
+        jobs[prog] = job["id"]
 
-        # ======================
-        # 2️⃣ Polling
-        # ======================
-        start = time.time()
+    # ======================
+    # 2️⃣ PHASE 2 — polling global
+    # ======================
+    completed = {}
+    start = time.time()
+    MAX_WAIT = 300
 
-        while True:
-            if time.time() - start > 300:
-                raise TimeoutError("Timeout extraction")
+    remaining = set(jobs.keys())
+
+    while remaining:
+        if time.time() - start > MAX_WAIT:
+            raise TimeoutError(
+                f"Timeout global extraction ({len(remaining)} programmes restants)"
+            )
+
+        for prog in list(remaining):
+            job_id = jobs[prog]
 
             status_resp = client.execute(
                 status_query,
@@ -76,22 +84,36 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
             error_msg = extraction.get("error")
 
             current_app.logger.warning(
-                f"[DATA] {prog} status={status} fileUrl={file_url}"
+                f"[DATA] {prog} status={status}"
             )
 
             if status in ("PENDING", "RUNNING"):
-                time.sleep(2)
                 continue
 
             if status in ("SUCCESS", "WARNING"):
-                break
+                completed[prog] = {
+                    "status": status,
+                    "file_url": file_url,
+                    "error": error_msg,
+                }
+                remaining.remove(prog)
+                continue
 
             # ERROR / FAILED / CANCELLED
             raise RuntimeError(f"{prog} : {error_msg}")
 
-        # ======================
-        # 3️⃣ Cas WARNING sans fichier
-        # ======================
+        time.sleep(3)  # polling global plus doux
+
+    # ======================
+    # 3️⃣ PHASE 3 — téléchargement des fichiers
+    # ======================
+    results = []
+
+    for prog, data in completed.items():
+        status = data["status"]
+        file_url = data["file_url"]
+        error_msg = data["error"]
+
         if status == "WARNING" and not file_url:
             results.append({
                 "file_name": None,
@@ -102,29 +124,31 @@ def extract_ifremer_data(programmes, filter_data, output_dir, monitoring_locatio
             })
             continue
 
-        if status == "SUCCESS" and not file_url:
-            raise RuntimeError(f"{prog} : SUCCESS sans fileUrl")
+        if not file_url:
+            raise RuntimeError(f"{prog} : pas de fileUrl")
 
-
-        # ======================
-        # 4️⃣ Téléchargement fichier
-        # ======================
-        filename = f"data_{utils_backend.safe_slug(monitoring_location)}_{ts}_{utils_backend.safe_slug(prog)}.zip"
+        filename = (
+            f"data_{utils_backend.safe_slug(monitoring_location)}_"
+            f"{ts}_{utils_backend.safe_slug(prog)}.zip"
+        )
         local_path = os.path.join(output_dir, filename)
 
-        r = requests.get(
+        current_app.logger.warning(f"[DATA] ⬇ Téléchargement {prog}")
+
+        with requests.get(
             file_url,
             headers={"Authorization": f"token {cfg['access_token']}"},
-            timeout=120
-        )
-        r.raise_for_status()
-
-        with open(local_path, "wb") as f:
-            f.write(r.content)
+            stream=True,
+            timeout=300
+        ) as r:
+            r.raise_for_status()
+            with open(local_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
 
         results.append({
             "file_name": filename,
-            "url": None,  # complété dans la route
+            "url": None,
             "status": status,
             "warning": None,
         })
